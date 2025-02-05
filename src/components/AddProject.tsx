@@ -61,9 +61,9 @@ export const AddProject: React.FC<AddProjectProps> = ({ onAddProject }) => {
       dispatch(fetchProjects());
 
       onAddProject(title, slug);
-      setTitle(""); // Réinitialiser le titre et le slug
+      setTitle("");
       setSlug("");
-      setOpen(false); // Fermer la boîte de dialogue
+      setOpen(false);
       toast({
         title: "Projet ajouté !",
         description: `Le projet "${title}" a été ajouté avec succès.`,
@@ -82,7 +82,7 @@ export const AddProject: React.FC<AddProjectProps> = ({ onAddProject }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full">
+        <Button className="w-full group-data-[collapsible=icon]:hidden">
           <Plus />
           Nouveau Projet
         </Button>

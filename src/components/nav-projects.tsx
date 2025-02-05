@@ -72,18 +72,23 @@ export function NavProjects({
                 side={isMobile ? "bottom" : "right"}
                 align={isMobile ? "end" : "start"}
               >
-                <DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onProjectClick(project);
+                  }}
+                >
                   <Folder className="text-muted-foreground" />
-                  <span>View Project</span>
+                  <span>Voir le projet</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Forward className="text-muted-foreground" />
-                  <span>Share Project</span>
+                  <span>Partager</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Trash2 className="text-muted-foreground" />
-                  <span>Delete Project</span>
+                <DropdownMenuItem className="text-red-600">
+                  <Trash2 />
+                  <span>Supprimer le projet</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

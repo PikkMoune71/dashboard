@@ -42,7 +42,7 @@ export default function Page() {
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
                   <BreadcrumbPage>
-                    {selectedProject?.title || "Data Fetching"}
+                    {selectedProject?.title || "Nouveaux projet"}
                   </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>

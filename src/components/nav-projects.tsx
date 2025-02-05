@@ -1,11 +1,11 @@
 "use client";
 
 import {
+  ClipboardList,
   Folder,
   Forward,
   MoreHorizontal,
   Trash2,
-  type LucideIcon,
 } from "lucide-react";
 
 import {
@@ -24,28 +24,26 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Project } from "@/types/Project";
 
-export function NavProjects({
-  projects,
-}: {
-  projects: {
-    name: string;
-    url: string;
-    icon: LucideIcon;
-  }[];
-}) {
+export function NavProjects({ projects }: { projects: Project[] }) {
   const { isMobile } = useSidebar();
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>Projects</SidebarGroupLabel>
+      <SidebarGroupLabel>Liste des projets</SidebarGroupLabel>
+      {projects.length === 0 && (
+        <SidebarGroupLabel className="text-muted-foreground">
+          Aucun projet
+        </SidebarGroupLabel>
+      )}
       <SidebarMenu>
-        {projects.map((item) => (
-          <SidebarMenuItem key={item.name}>
+        {projects.map((project, index) => (
+          <SidebarMenuItem key={index}>
             <SidebarMenuButton asChild>
-              <a href={item.url}>
-                <item.icon />
-                <span>{item.name}</span>
+              <a href={`/dashboard/${project.slug}`}>
+                <ClipboardList />
+                <span>{project.title}</span>
               </a>
             </SidebarMenuButton>
             <DropdownMenu>

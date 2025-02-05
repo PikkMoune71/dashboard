@@ -22,16 +22,15 @@ export function useUser() {
 
     const fetchUserData = async () => {
       if (authUser) {
-        // Récupérer les données utilisateur depuis Firestore
         const userDocRef = doc(db, "users", authUser.uid);
         const userDocSnap = await getDoc(userDocRef);
 
         if (userDocSnap.exists()) {
           const userData = userDocSnap.data();
           const userLogged = {
-            name: `${userData.firstName} ${userData.lastName}`, // Combinaison prénom + nom
+            name: `${userData.firstName} ${userData.lastName}`,
             email: userData.email || "Email inconnu",
-            avatar: userData.avatar || "/default-avatar.png", // Avatar par défaut si non défini
+            avatar: userData.avatar || "/default-avatar.png",
           };
 
           setUser(userLogged);

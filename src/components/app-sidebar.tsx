@@ -1,18 +1,5 @@
 "use client";
-import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
-} from "lucide-react";
-
-import { NavMain } from "@/components/nav-main";
+import { useState, useEffect } from "react";
 import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -24,38 +11,39 @@ import {
 } from "@/components/ui/sidebar";
 import { useUser } from "@/composables/useFetchUser";
 import { Logo } from "./Logo";
-
-const data = {
-  teams: [
-    { name: "Acme Inc", logo: GalleryVerticalEnd, plan: "Enterprise" },
-    { name: "Acme Corp.", logo: AudioWaveform, plan: "Startup" },
-    { name: "Evil Corp.", logo: Command, plan: "Free" },
-  ],
-  navMain: [
-    { title: "Playground", url: "#", icon: SquareTerminal, isActive: true },
-    { title: "Models", url: "#", icon: Bot },
-    { title: "Documentation", url: "#", icon: BookOpen },
-    { title: "Settings", url: "#", icon: Settings2 },
-  ],
-  projects: [
-    { name: "Design Engineering", url: "#", icon: Frame },
-    { name: "Sales & Marketing", url: "#", icon: PieChart },
-    { name: "Travel", url: "#", icon: Map },
-  ],
-};
+import { AddTask } from "./AddTask";
+import { Project } from "@/types/Project";
+import { fetchProjects } from "@/composables/useFetchProject";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, loading } = useUser();
+  const [projects, setProjects] = useState<Project[]>([]);
+
+  useEffect(() => {
+    const loadProjects = async () => {
+      const fetchedProjects = await fetchProjects();
+      setProjects(fetchedProjects);
+    };
+
+    loadProjects();
+  }, []);
 
   if (loading || !user) return null;
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <Logo />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <div className="px-2 mt-4">
+          <AddTask
+            onAddTask={(title, slug) =>
+              setProjects([...projects, { title, slug }])
+            }
+          />
+        </div>
+        <NavProjects projects={projects} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

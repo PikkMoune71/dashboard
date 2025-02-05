@@ -3,4 +3,6 @@ export interface Project {
   title: string;
   slug: string;
   isActive?: boolean;
+  createdAt?: Date;
+  userId?: string;
 }

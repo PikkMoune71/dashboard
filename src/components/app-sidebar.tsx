@@ -11,39 +11,45 @@ import {
 } from "@/components/ui/sidebar";
 import { useUser } from "@/composables/useFetchUser";
 import { Logo } from "./Logo";
-import { AddTask } from "./AddTask";
+import { AddProject } from "./AddProject";
 import { Project } from "@/types/Project";
-import { fetchProjects } from "@/composables/useFetchProject";
+import { AppDispatch } from "@/store/store";
+import { useDispatch } from "react-redux";
+import { fetchProjects } from "@/store/actions/projectsAction";
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+  onProjectClick,
+}: {
+  onProjectClick: (project: Project) => void;
+}) {
   const { user, loading } = useUser();
   const [projects, setProjects] = useState<Project[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     const loadProjects = async () => {
-      const fetchedProjects = await fetchProjects();
-      setProjects(fetchedProjects);
+      dispatch(fetchProjects());
     };
 
     loadProjects();
-  }, []);
+  }, [dispatch]);
 
   if (loading || !user) return null;
 
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="icon">
       <SidebarHeader>
         <Logo />
       </SidebarHeader>
       <SidebarContent>
         <div className="px-2 mt-4">
-          <AddTask
-            onAddTask={(title, slug) =>
+          <AddProject
+            onAddProject={(title: string, slug: string) =>
               setProjects([...projects, { title, slug }])
             }
           />
         </div>
-        <NavProjects projects={projects} />
+        <NavProjects projects={projects} onProjectClick={onProjectClick} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

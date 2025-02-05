@@ -1,3 +1,5 @@
+"use client";
+import { useState } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   Breadcrumb,
@@ -13,11 +15,20 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Project } from "@/types/Project";
+import { AddProject } from "@/components/AddProject";
 
 export default function Page() {
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+
+  const handleProjectClick = (project: Project) => {
+    setSelectedProject(project);
+  };
+
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar onProjectClick={handleProjectClick} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
@@ -30,19 +41,41 @@ export default function Page() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                  <BreadcrumbPage>
+                    {selectedProject?.title || "Data Fetching"}
+                  </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
+        {!selectedProject && (
+          <div className="flex flex-col items-center justify-center p-8 rounded-lg h-full bg-muted/50">
+            <h2 className="text-2xl font-semibold text-muted-foreground mb-4">
+              Aucun projet sélectionné
+            </h2>
+            <p className="text-lg text-muted-foreground mb-6">
+              Sélectionnez un projet ou ajoutez-en un nouveau pour commencer à
+              travailler.
+            </p>
+            <div className="flex items-center gap-4">
+              <AddProject
+                onAddProject={(title: string, slug: string) =>
+                  setProjects([...projects, { title, slug }])
+                }
+              />
+            </div>
           </div>
-          <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+        )}
+
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          {selectedProject && (
+            <>
+              <div className="aspect-video rounded-xl bg-muted/50">
+                <h3>{selectedProject.title}</h3>
+              </div>
+            </>
+          )}
         </div>
       </SidebarInset>
     </SidebarProvider>

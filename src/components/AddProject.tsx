@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import {
   Dialog,
@@ -17,16 +18,20 @@ import { collection, addDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/store/store";
+import { fetchProjects } from "@/store/actions/projectsAction";
 
-interface AddTaskProps {
-  onAddTask: (title: string, slug: string) => void;
+interface AddProjectProps {
+  onAddProject: (title: string, slug: string) => void;
 }
 
-export const AddTask: React.FC<AddTaskProps> = ({ onAddTask }) => {
+export const AddProject: React.FC<AddProjectProps> = ({ onAddProject }) => {
   const [title, setTitle] = useState<string>("");
   const [slug, setSlug] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
   const { toast } = useToast();
+  const dispatch = useDispatch<AppDispatch>();
 
   const auth = getAuth();
   const user = auth.currentUser;
@@ -37,7 +42,7 @@ export const AddTask: React.FC<AddTaskProps> = ({ onAddTask }) => {
     setSlug(generateSlug(newTitle));
   };
 
-  const handleAddTask = async () => {
+  const handleAddProject = async () => {
     if (title.trim() === "") return;
 
     if (!user) {
@@ -49,12 +54,16 @@ export const AddTask: React.FC<AddTaskProps> = ({ onAddTask }) => {
       await addDoc(collection(db, "projects"), {
         title,
         slug,
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
         userId: user.uid,
       });
 
-      onAddTask(title, slug);
-      handleOpen();
+      dispatch(fetchProjects());
+
+      onAddProject(title, slug);
+      setTitle(""); // Réinitialiser le titre et le slug
+      setSlug("");
+      setOpen(false); // Fermer la boîte de dialogue
       toast({
         title: "Projet ajouté !",
         description: `Le projet "${title}" a été ajouté avec succès.`,
@@ -62,13 +71,12 @@ export const AddTask: React.FC<AddTaskProps> = ({ onAddTask }) => {
       });
     } catch (error) {
       console.error("Erreur lors de l'ajout du projet : ", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'ajout du projet.",
+        className: "bg-red-600 text-white",
+      });
     }
-  };
-
-  const handleOpen = () => {
-    setTitle("");
-    setSlug("");
-    setOpen(false);
   };
 
   return (
@@ -111,7 +119,7 @@ export const AddTask: React.FC<AddTaskProps> = ({ onAddTask }) => {
           </div>
         </div>
         <DialogFooter>
-          <Button type="button" onClick={handleAddTask}>
+          <Button type="button" onClick={handleAddProject}>
             Ajouter
           </Button>
         </DialogFooter>

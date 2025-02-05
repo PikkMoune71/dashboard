@@ -54,7 +54,7 @@ export function RegisterForm({
           lastName,
           email,
           uid: user.uid,
-          createdAt: new Date(),
+          createdAt: new Date().toISOString(),
         });
 
         setEmail("");
@@ -82,7 +82,7 @@ export function RegisterForm({
           email: user.email,
           avatar: user.photoURL || "",
           uid: user.uid,
-          createdAt: new Date(),
+          createdAt: new Date().toISOString(),
         });
 
         router.push("/dashboard");

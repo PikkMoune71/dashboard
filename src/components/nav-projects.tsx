@@ -25,9 +25,17 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Project } from "@/types/Project";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
-export function NavProjects({ projects }: { projects: Project[] }) {
+export function NavProjects({
+  onProjectClick,
+}: {
+  projects: Project[];
+  onProjectClick: (project: Project) => void;
+}) {
   const { isMobile } = useSidebar();
+  const projects = useSelector((state: RootState) => state.projects.projects);
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
@@ -41,7 +49,13 @@ export function NavProjects({ projects }: { projects: Project[] }) {
         {projects.map((project, index) => (
           <SidebarMenuItem key={index}>
             <SidebarMenuButton asChild>
-              <a href={`/dashboard/${project.slug}`}>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onProjectClick(project);
+                }}
+              >
                 <ClipboardList />
                 <span>{project.title}</span>
               </a>

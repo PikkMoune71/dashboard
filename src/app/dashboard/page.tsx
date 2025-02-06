@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Project } from "@/types/Project";
 import { AddProject } from "@/components/AddProject";
+import { ProjectBoard } from "@/components/ProjectBoard";
 
 export default function Page() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -69,13 +70,7 @@ export default function Page() {
         )}
 
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          {selectedProject && (
-            <>
-              <div className="aspect-video rounded-xl bg-muted/50">
-                <h3>{selectedProject.title}</h3>
-              </div>
-            </>
-          )}
+          {selectedProject && <ProjectBoard project={selectedProject} />}
         </div>
       </SidebarInset>
     </SidebarProvider>

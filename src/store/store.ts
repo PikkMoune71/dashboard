@@ -1,26 +1,28 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
-import storage from "redux-persist/lib/storage"; // Utilise localStorage par défaut
-import projectsReducer from "@/store/slice/projectSlice";
+import storage from "redux-persist/lib/storage";
+import projectsReducer from "@/store/slices/projectSlice";
+import tasksReducer from "@/store/slices/taskSlice";
 
-// Configuration de redux-persist
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["projects"],
+  whitelist: ["projects", "tasks"],
 };
 
-const persistedReducer = persistReducer(persistConfig, projectsReducer);
+const projectPersistedReducer = persistReducer(persistConfig, projectsReducer);
+const taskPersistedReducer = persistReducer(persistConfig, tasksReducer);
 
 export const store = configureStore({
   reducer: {
-    projects: persistedReducer,
+    projects: projectPersistedReducer,
+    tasks: taskPersistedReducer,
   },
-  // Ajouter serializableCheck pour éviter les erreurs liées aux valeurs non sérialisables
+
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ["persist/PERSIST"], // Ignorer cette action spécifique
+        ignoredActions: ["persist/PERSIST"],
       },
     }),
 });
@@ -28,4 +30,4 @@ export const store = configureStore({
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
-export const persistor = persistStore(store); // Crée un persistor
+export const persistor = persistStore(store);

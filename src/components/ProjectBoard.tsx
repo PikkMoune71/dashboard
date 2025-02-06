@@ -31,6 +31,8 @@ import {
   updateTaskAction,
 } from "@/store/actions/tasksAction";
 import { setTasks } from "@/store/slices/taskSlice";
+import { Textarea } from "./ui/textarea";
+import { Separator } from "./ui/separator";
 
 const statusColors = {
   todo: "bg-indigo-200 text-indigo-700",
@@ -47,7 +49,8 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
   const tasks = useSelector((state: any) =>
     state.tasks.tasks.filter((task: Task) => task.projectId === project.id)
   );
-  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskTitle, setNewTaskTitle] = useState<string>("");
+  const [newTaskDescription, setNewTaskDescription] = useState<string>("");
   const [newTaskStatus, setNewTaskStatus] = useState<Task["status"]>("todo");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [status, setStatus] = useState<Task["status"] | undefined>(undefined);
@@ -108,6 +111,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
     const newTask: Task = {
       title: newTaskTitle,
       status: newTaskStatus,
+      description: newTaskDescription,
       projectId: project.id || "",
       createdAt: new Date().toISOString(),
     };
@@ -117,6 +121,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
     );
 
     setNewTaskTitle("");
+    setNewTaskDescription("");
     setNewTaskStatus("todo");
     setIsDialogOpen(false);
   };
@@ -124,7 +129,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
   return (
     <div>
       <div className="flex justify-between items-center p-4">
-        <h3 className="font-bold">{project.title}</h3>
+        <h3 className="font-bold text-3xl">{project.title}</h3>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="mb-4">+ Ajouter une tâche</Button>
@@ -137,6 +142,11 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
               placeholder="Titre de la tâche"
               value={newTaskTitle}
               onChange={(e) => setNewTaskTitle(e.target.value)}
+            />
+            <Textarea
+              placeholder="Description de la tâche"
+              value={newTaskDescription}
+              onChange={(e) => setNewTaskDescription(e.target.value)}
             />
             <Select
               value={newTaskStatus}
@@ -210,12 +220,22 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
                             <div className="flex items-center justify-between gap-2">
                               <h3 className="font-bold">{task.title}</h3>
                               <Badge
-                                className={`rounded-full mb-2 p-2 ${
+                                className={`rounded-full  mb-2 ${
                                   statusColors[task.status]
                                 }`}
-                              ></Badge>
+                              >
+                                {icon}
+                              </Badge>
                             </div>
-                            <p>{task.description}</p>
+                            {task.description && (
+                              <div className="mt-2">
+                                <Separator className="my-1" />
+                                <p className="text-sm font-bold">Description</p>
+                                <p className="text-sm text-gray-500">
+                                  {task.description}
+                                </p>
+                              </div>
+                            )}
                           </Card>
                         )}
                       </Draggable>

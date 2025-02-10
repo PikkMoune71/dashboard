@@ -29,12 +29,21 @@ import {
   addTaskAction,
   fetchTasks,
   updateTaskAction,
+  removeTaskAction,
 } from "@/store/actions/tasksAction";
 import { setTasks } from "@/store/slices/taskSlice";
 import { Textarea } from "./ui/textarea";
-import { Separator } from "./ui/separator";
 import { EditButton } from "./EditButton";
 import { updateProjectAction } from "@/store/actions/projectsAction";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
 const statusColors = {
   todo: "bg-indigo-200 text-indigo-700",
@@ -55,8 +64,13 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
   const [newTaskDescription, setNewTaskDescription] = useState<string>("");
   const [newTaskStatus, setNewTaskStatus] = useState<Task["status"]>("todo");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [status, setStatus] = useState<Task["status"] | undefined>(undefined);
   const [titleProject, setTitleProject] = useState<string>(project.title);
+  const [editTaskId, setEditTaskId] = useState<string | null>(null);
+  const [editTaskTitle, setEditTaskTitle] = useState<string>("");
+  const [editTaskDescription, setEditTaskDescription] = useState<string>("");
+  const [editTaskStatus, setEditTaskStatus] = useState<Task["status"]>("todo");
 
   useEffect(() => {
     setTitleProject(project.title);
@@ -103,9 +117,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
       return;
     }
 
-    // Mettre à jour la tâche dans le store (local)
     dispatch(setTasks(updatedTasks));
-    // Mettre à jour la tâche dans la base de données
     dispatch(updateTaskAction({ projectId, updatedTask }));
   };
 
@@ -141,6 +153,32 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
         })
       );
     }
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditTaskId(task.id ?? "");
+    setEditTaskTitle(task.title);
+    setEditTaskDescription(task.description || "");
+    setEditTaskStatus(task.status);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveEditTask = () => {
+    if (!editTaskTitle.trim()) return;
+
+    const updatedTask = {
+      ...tasks.find((task: Task) => task.id === editTaskId),
+      title: editTaskTitle,
+      description: editTaskDescription,
+      status: editTaskStatus,
+    };
+
+    dispatch(updateTaskAction({ projectId: project.id ?? "", updatedTask }));
+    setIsEditDialogOpen(false);
+  };
+
+  const handleDeleteTask = (taskId: string, projectId: string) => {
+    dispatch(removeTaskAction({ projectId, taskId }));
   };
 
   return (
@@ -202,6 +240,53 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
         </Dialog>
       </div>
 
+      {/* Edit Task Modal */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier la tâche</DialogTitle>
+          </DialogHeader>
+          <Input
+            placeholder="Titre de la tâche"
+            value={editTaskTitle}
+            onChange={(e) => setEditTaskTitle(e.target.value)}
+          />
+          <Textarea
+            placeholder="Description de la tâche"
+            value={editTaskDescription}
+            onChange={(e) => setEditTaskDescription(e.target.value)}
+          />
+          <Select
+            value={editTaskStatus}
+            onValueChange={(value) =>
+              setEditTaskStatus(value as Task["status"])
+            }
+          >
+            <SelectTrigger
+              className={`p-2 rounded ${
+                status ? statusColors[status] : "bg-indigo-200 text-indigo-700"
+              }`}
+            >
+              <SelectValue placeholder="Choisir un statut" />
+            </SelectTrigger>
+            <SelectContent className="m-2">
+              <SelectItem value="todo" className="bg-indigo-200 my-2">
+                À faire
+              </SelectItem>
+              <SelectItem value="inProgress" className="bg-amber-200 my-2">
+                En cours
+              </SelectItem>
+              <SelectItem value="done" className="bg-green-200 my-2">
+                Terminée
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <DialogFooter>
+            <Button onClick={handleSaveEditTask}>Sauvegarder</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4">
         <DragDropContext onDragEnd={handleDragEnd}>
           {Object.entries(columns).map(([status, { title, icon }]) => (
@@ -237,24 +322,46 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
                             className="bg-white p-2 rounded-xl shadow my-2"
                           >
                             <div className="flex items-center justify-between gap-2">
-                              <h3 className="font-bold">{task.title}</h3>
-                              <Badge
-                                className={`rounded-full  mb-2 ${
-                                  statusColors[task.status]
-                                }`}
-                              >
-                                {icon}
-                              </Badge>
-                            </div>
-                            {task.description && (
-                              <div className="mt-2">
-                                <Separator className="my-1" />
-                                <p className="text-sm font-bold">Description</p>
-                                <p className="text-sm text-gray-500">
-                                  {task.description}
-                                </p>
+                              <div className="flex items-center gap-2">
+                                <Badge
+                                  className={`rounded-full ${
+                                    statusColors[task.status]
+                                  }`}
+                                >
+                                  {icon}
+                                </Badge>
+                                <h3 className="font-bold">{task.title}</h3>
                               </div>
-                            )}
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreHorizontal />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => handleEditTask(task)}
+                                  >
+                                    <Pencil className="mr-2" /> Modifier
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      handleDeleteTask(
+                                        task.id ?? "",
+                                        project.id ?? ""
+                                      )
+                                    }
+                                    className="text-red-500"
+                                  >
+                                    <Trash2 className="mr-2" /> Supprimer
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                            <p className="text-sm">{task.description}</p>
                           </Card>
                         )}
                       </Draggable>

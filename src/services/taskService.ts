@@ -95,6 +95,7 @@ export const updateTask = async (
     const taskDocRef = doc(db, "tasks", updatedTask.id);
     await updateDoc(taskDocRef, {
       title: updatedTask.title,
+      description: updatedTask.description,
       status: updatedTask.status,
       projectId: updatedTask.projectId,
     });

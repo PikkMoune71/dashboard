@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Project } from "@/types/Project";
 import { fetchProjects } from "../actions/projectsAction";
+import { updateProjectAction } from "../actions/projectsAction";
 
 interface ProjectsState {
   projects: Project[];
@@ -33,6 +34,21 @@ const projectsSlice = createSlice({
         state.loading = false;
       })
       .addCase(fetchProjects.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Erreur inconnue";
+      })
+      .addCase(updateProjectAction.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updateProjectAction.fulfilled, (state, action) => {
+        const updatedProject = action.payload;
+        const index = state.projects.findIndex(
+          (project) => project.id === updatedProject.id
+        );
+        state.projects[index] = updatedProject;
+        state.loading = false;
+      })
+      .addCase(updateProjectAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Erreur inconnue";
       });

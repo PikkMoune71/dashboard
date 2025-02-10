@@ -33,6 +33,8 @@ import {
 import { setTasks } from "@/store/slices/taskSlice";
 import { Textarea } from "./ui/textarea";
 import { Separator } from "./ui/separator";
+import { EditButton } from "./EditButton";
+import { updateProjectAction } from "@/store/actions/projectsAction";
 
 const statusColors = {
   todo: "bg-indigo-200 text-indigo-700",
@@ -54,12 +56,14 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
   const [newTaskStatus, setNewTaskStatus] = useState<Task["status"]>("todo");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [status, setStatus] = useState<Task["status"] | undefined>(undefined);
+  const [titleProject, setTitleProject] = useState<string>(project.title);
 
   useEffect(() => {
+    setTitleProject(project.title);
     if (project.id) {
       dispatch(fetchTasks(project.id));
     }
-  }, [dispatch, project.id]);
+  }, [dispatch, project]);
 
   const columns = {
     todo: {
@@ -126,10 +130,25 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
     setIsDialogOpen(false);
   };
 
+  const handleSaveEditButton = (newValue: string) => {
+    if (newValue.trim() && newValue !== titleProject) {
+      setTitleProject(newValue);
+
+      dispatch(
+        updateProjectAction({
+          userId: project.userId ?? "",
+          updatedProject: { ...project, title: newValue },
+        })
+      );
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center p-4">
-        <h3 className="font-bold text-3xl">{project.title}</h3>
+        <div className="flex items-center gap-4">
+          <EditButton value={titleProject} onSave={handleSaveEditButton} />
+        </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="mb-4">+ Ajouter une tâche</Button>
@@ -183,7 +202,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4">
         <DragDropContext onDragEnd={handleDragEnd}>
           {Object.entries(columns).map(([status, { title, icon }]) => (
             <Droppable key={status} droppableId={status}>

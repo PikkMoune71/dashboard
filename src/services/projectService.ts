@@ -1,4 +1,3 @@
-// src/services/projectService.ts
 import { db } from "@/app/firebase/config";
 import {
   collection,
@@ -6,6 +5,8 @@ import {
   where,
   getDocs,
   Timestamp,
+  doc,
+  updateDoc,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { Project } from "@/types/Project";
@@ -42,5 +43,39 @@ export const getProjects = async (): Promise<Project[]> => {
   } catch (error) {
     console.error("Erreur lors de la récupération des projets : ", error);
     throw new Error("Erreur lors de la récupération des projets");
+  }
+};
+
+export const updateProject = async (
+  userId: string,
+  updatedProject: Project
+): Promise<Project> => {
+  const auth = getAuth();
+  const user = auth.currentUser;
+
+  if (!userId || userId !== user?.uid) {
+    throw new Error("Utilisateur non connecté");
+  }
+
+  if (!updatedProject.id) {
+    throw new Error("L'ID du projet est requis pour la mise à jour.");
+  }
+
+  try {
+    const { id, ...projectData } = updatedProject;
+
+    const projectRef = doc(db, "projects", id);
+    if (projectData.title) {
+      projectData.slug = projectData.title
+        .toLowerCase()
+        .replace(/ /g, "-")
+        .replace(/[^\w-]+/g, "");
+    }
+    await updateDoc(projectRef, projectData);
+
+    return updatedProject;
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour du projet :", error);
+    throw new Error("Erreur lors de la mise à jour du projet.");
   }
 };

@@ -1,6 +1,10 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { Project } from "@/types/Project";
-import { getProjects, updateProject } from "@/services/projectService";
+import {
+  deleteProject,
+  getProjects,
+  updateProject,
+} from "@/services/projectService";
 
 export const fetchProjects = createAsyncThunk<Project[]>(
   "projects/fetchProjects",
@@ -12,7 +16,7 @@ export const fetchProjects = createAsyncThunk<Project[]>(
 
 // Mettre à jour un projet
 export const updateProjectAction = createAsyncThunk(
-  "tasks/updateTask",
+  "projects/updateTask",
   async ({
     userId,
     updatedProject,
@@ -21,5 +25,21 @@ export const updateProjectAction = createAsyncThunk(
     updatedProject: Project;
   }) => {
     return await updateProject(userId, updatedProject);
+  }
+);
+
+// Supprimer un projet
+export const deleteProjectAction = createAsyncThunk<
+  void,
+  { userId: string; deletedProject: Project },
+  { rejectValue: string }
+>(
+  "projects/deleteProject",
+  async ({ userId, deletedProject }, { rejectWithValue }) => {
+    try {
+      await deleteProject(userId, deletedProject);
+    } catch {
+      return rejectWithValue("Failed to delete project");
+    }
   }
 );

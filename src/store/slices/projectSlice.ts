@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Project } from "@/types/Project";
 import { fetchProjects } from "../actions/projectsAction";
 import { updateProjectAction } from "../actions/projectsAction";
+import { deleteProjectAction } from "../actions/projectsAction";
 
 interface ProjectsState {
   projects: Project[];
@@ -49,6 +50,26 @@ const projectsSlice = createSlice({
         state.loading = false;
       })
       .addCase(updateProjectAction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Erreur inconnue";
+      })
+      .addCase(deleteProjectAction.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteProjectAction.fulfilled, (state, action) => {
+        const { deletedProject } = action.meta.arg;
+        const index = state.projects.findIndex(
+          (project) => project.id === deletedProject.id
+        );
+
+        if (index !== -1) {
+          state.projects.splice(index, 1);
+        }
+
+        state.loading = false;
+      })
+
+      .addCase(deleteProjectAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Erreur inconnue";
       });

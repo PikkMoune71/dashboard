@@ -7,9 +7,11 @@ import {
   Timestamp,
   doc,
   updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { Project } from "@/types/Project";
+import { generateSlug } from "@/composables/useGenerateSlug";
 
 export const getProjects = async (): Promise<Project[]> => {
   const auth = getAuth();
@@ -39,6 +41,12 @@ export const getProjects = async (): Promise<Project[]> => {
       });
     });
 
+    projects.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
+
     return projects;
   } catch (error) {
     console.error("Erreur lors de la récupération des projets : ", error);
@@ -66,10 +74,7 @@ export const updateProject = async (
 
     const projectRef = doc(db, "projects", id);
     if (projectData.title) {
-      projectData.slug = projectData.title
-        .toLowerCase()
-        .replace(/ /g, "-")
-        .replace(/[^\w-]+/g, "");
+      projectData.slug = generateSlug(projectData.title);
     }
     await updateDoc(projectRef, projectData);
 
@@ -77,5 +82,29 @@ export const updateProject = async (
   } catch (error) {
     console.error("Erreur lors de la mise à jour du projet :", error);
     throw new Error("Erreur lors de la mise à jour du projet.");
+  }
+};
+
+export const deleteProject = async (
+  userId: string,
+  deletedProject: Project
+): Promise<void> => {
+  const auth = getAuth();
+  const user = auth.currentUser;
+
+  if (!userId || userId !== user?.uid) {
+    throw new Error("Utilisateur non connecté");
+  }
+
+  if (!deletedProject.id) {
+    throw new Error("L'ID du projet est requis pour la suppression.");
+  }
+
+  try {
+    const projectRef = doc(db, "projects", deletedProject.id);
+    await deleteDoc(projectRef);
+  } catch (error) {
+    console.error("Erreur lors de la suppression du projet :", error);
+    throw new Error("Erreur lors de la suppression du projet.");
   }
 };

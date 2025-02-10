@@ -17,7 +17,6 @@ export const EditButton: React.FC<EditButtonProps> = ({ value, onSave }) => {
   }, [value]);
 
   const handleSave = () => {
-    console.log("inputValue", inputValue);
     if (inputValue.trim() && inputValue !== value) {
       onSave(inputValue);
     }

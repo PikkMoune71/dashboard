@@ -44,6 +44,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { truncateText } from "@/composables/useTruncatedText";
 
 const statusColors = {
   todo: "bg-indigo-200 text-indigo-700",
@@ -287,7 +288,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
         </DialogContent>
       </Dialog>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-3 gap-4 p-4">
         <DragDropContext onDragEnd={handleDragEnd}>
           {Object.entries(columns).map(([status, { title, icon }]) => (
             <Droppable key={status} droppableId={status}>
@@ -330,7 +331,9 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
                                 >
                                   {icon}
                                 </Badge>
-                                <h3 className="font-bold">{task.title}</h3>
+                                <h3 className="font-bold">
+                                  {truncateText(task.title, 40)}
+                                </h3>
                               </div>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>

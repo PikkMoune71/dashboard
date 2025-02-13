@@ -18,60 +18,83 @@ import {
 import { Project } from "@/types/Project";
 import { AddProject } from "@/components/AddProject";
 import { ProjectBoard } from "@/components/ProjectBoard";
+import { Account } from "@/components/Account";
 
 export default function Page() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [showAccount, setShowAccount] = useState(false);
 
   const handleProjectClick = (project: Project) => {
     setSelectedProject(project);
+    setShowAccount(false);
+  };
+
+  const handleShowAccount = () => {
+    setShowAccount(true);
   };
 
   return (
     <SidebarProvider>
-      <AppSidebar onProjectClick={handleProjectClick} />
+      <AppSidebar
+        onProjectClick={handleProjectClick}
+        onAccountClick={handleShowAccount}
+      />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+        <header className="flex h-16 shrink-0 items-center gap-2">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">Liste des projets</BreadcrumbLink>
+                  <BreadcrumbLink href="#">
+                    {showAccount ? "Mon compte" : "Liste des projets"}
+                  </BreadcrumbLink>
                 </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    {selectedProject?.title || "Nouveaux projet"}
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
+                {!showAccount && (
+                  <>
+                    <BreadcrumbSeparator className="hidden md:block" />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>
+                        {selectedProject?.title || "Nouveau projet"}
+                      </BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </>
+                )}
               </BreadcrumbList>
             </Breadcrumb>
           </div>
         </header>
-        {!selectedProject && (
-          <div className="flex flex-col items-center justify-center p-8 rounded-lg h-full bg-muted/50">
-            <h2 className="text-2xl font-semibold text-muted-foreground mb-4">
-              Aucun projet sélectionné
-            </h2>
-            <p className="text-lg text-muted-foreground mb-6">
-              Sélectionnez un projet ou ajoutez-en un nouveau pour commencer à
-              travailler.
-            </p>
-            <div className="flex items-center gap-4">
-              <AddProject
-                onAddProject={(title: string, slug: string) =>
-                  setProjects([...projects, { title, slug }])
-                }
-              />
-            </div>
-          </div>
-        )}
 
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          {selectedProject && <ProjectBoard project={selectedProject} />}
-        </div>
+        {!showAccount ? (
+          <>
+            {!selectedProject && (
+              <div className="flex flex-col items-center justify-center p-8 rounded-lg h-full bg-muted/50">
+                <h2 className="text-2xl font-semibold text-muted-foreground mb-4">
+                  Aucun projet sélectionné
+                </h2>
+                <p className="text-lg text-muted-foreground mb-6">
+                  Sélectionnez un projet ou ajoutez-en un nouveau pour commencer
+                  à travailler.
+                </p>
+                <div className="flex items-center gap-4">
+                  <AddProject
+                    onAddProject={(title: string, slug: string) =>
+                      setProjects([...projects, { title, slug }])
+                    }
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+              {selectedProject && <ProjectBoard project={selectedProject} />}
+            </div>
+          </>
+        ) : (
+          <Account />
+        )}
       </SidebarInset>
     </SidebarProvider>
   );

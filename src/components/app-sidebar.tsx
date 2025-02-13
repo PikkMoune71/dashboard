@@ -19,8 +19,10 @@ import { fetchProjects } from "@/store/actions/projectsAction";
 
 export function AppSidebar({
   onProjectClick,
+  onAccountClick,
 }: {
   onProjectClick: (project: Project) => void;
+  onAccountClick: () => void;
 }) {
   const { user, loading } = useUser();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -52,7 +54,7 @@ export function AppSidebar({
         <NavProjects projects={projects} onProjectClick={onProjectClick} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser user={user} onShowAccount={onAccountClick} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

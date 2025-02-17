@@ -55,10 +55,10 @@ export function AppSidebar({
           <div className="mt-4">
             <Button
               variant="outline"
-              className="w-full"
+              className="w-full font-semibold"
               onClick={onCalendarClick}
             >
-              📅 Voir le calendrier
+              📅 Calendrier
             </Button>
           </div>
         </div>

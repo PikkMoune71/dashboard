@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import FullCalendar from "@fullcalendar/react";
@@ -5,73 +6,51 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-import { useMemo } from "react";
-
-const generateColor = (projectId: string) => {
-  const colors = [
-    "#ffadad",
-    "#ffd6a5",
-    "#fdffb6",
-    "#caffbf",
-    "#9bf6ff",
-    "#a0c4ff",
-    "#bdb2ff",
-    "#ffc6ff",
-  ];
-  return colors[parseInt(projectId, 16) % colors.length] || "#ccc";
-};
-
-const darkenColor = (hex: string, percent: number) => {
-  const num = parseInt(hex.slice(1), 16);
-  const amt = Math.round(2.55 * percent);
-  let r = (num >> 16) - amt;
-  let g = ((num >> 8) & 0x00ff) - amt;
-  let b = (num & 0x0000ff) - amt;
-
-  r = Math.max(r, 0);
-  g = Math.max(g, 0);
-  b = Math.max(b, 0);
-
-  return `rgb(${r}, ${g}, ${b})`;
-};
+import { useRef, useEffect, useState } from "react";
+import { Project } from "@/types/Project";
+import { Event } from "@/types/Event";
 
 const Calendar = () => {
-  const projects = useSelector((state: RootState) => state.projects.projects);
+  const calendarRef = useRef<FullCalendar | null>(null);
+  const projects = useSelector(
+    (state: RootState) => state.projects.projects
+  ) as Project[];
 
-  const events = useMemo(() => {
-    return projects
-      .flatMap((project) =>
-        project?.tasks?.map((task) => {
-          if (task?.startDate && task?.endDate && task?.status !== "done") {
-            const startDate = new Date(task.startDate);
-            const endDate = new Date(task.endDate);
+  const [events, setEvents] = useState<Event[]>([]);
 
-            const isMultiDay = startDate.getDate() !== endDate.getDate();
-            const projectColor = generateColor(project.id ?? "");
-
+  useEffect(() => {
+    const updatedEvents: Event[] = projects.flatMap(
+      (project) =>
+        project.tasks
+          ?.filter((task) => task && task.startDate && task.endDate)
+          .map((task) => {
+            const startDate = new Date(task.startDate!).toISOString();
+            const endDate = new Date(task.endDate!).toISOString();
             return {
+              id: task.id,
               title: task.title,
-              start: task.startDate,
-              end: task.endDate,
-              backgroundColor: projectColor,
-              borderColor: projectColor,
+              start: startDate,
+              end: endDate,
               extendedProps: {
                 projectName: project.title,
-                isMultiDay,
-                projectColor,
-                startDate: task.startDate,
-                endDate: task.endDate,
+                projectColor: project.color,
+                isMultiDay: startDate !== endDate,
+                startDate: task.startDate!,
+                endDate: task.endDate!,
+                status: task.status,
               },
             };
-          }
-          return undefined;
-        })
-      )
-      .filter((event) => event !== undefined);
+          }) || []
+    );
+
+    setEvents(updatedEvents);
+    console.log(projects);
   }, [projects]);
 
   return (
     <FullCalendar
+      key={JSON.stringify(events)}
+      ref={calendarRef}
       plugins={[dayGridPlugin, interactionPlugin]}
       initialView="dayGridWeek"
       events={events}
@@ -80,37 +59,42 @@ const Calendar = () => {
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const renderEventContent = (eventInfo: any) => {
-  const { projectName, projectColor, isMultiDay, startDate, endDate } =
-    eventInfo.event.extendedProps;
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+};
 
-  const darkerTextColor = darkenColor(projectColor, 60);
+const renderEventContent = (eventInfo: any) => {
+  const { projectName, projectColor, isMultiDay, startDate, endDate, status } =
+    eventInfo.event.extendedProps as Event["extendedProps"];
 
   return (
     <div
       style={{
-        padding: "6px",
+        padding: "10px",
         fontSize: "12px",
         whiteSpace: "normal",
-        backgroundColor: projectColor,
-        color: darkerTextColor,
-        borderRadius: "4px",
+        color: "white",
+        borderRadius: "15px",
+        width: "100%",
       }}
+      className={`${projectColor} text-white ${
+        status === "done" && "opacity-50"
+      }`}
     >
       <div
-        style={{
-          fontWeight: "bold",
-          fontSize: "13px",
-          marginBottom: "2px",
-        }}
+        style={{ fontWeight: "bold", fontSize: "13px", marginBottom: "2px" }}
       >
-        {eventInfo.event.title}
+        {eventInfo.event.title} {status === "done" && "✅"}{" "}
+        {status === "todo" && "📝"} {status === "inProgress" && "🚧"}
       </div>
-      <div>{projectName}</div>
+      <div className="mb-2">{projectName}</div>
       {isMultiDay && (
-        <span style={{ fontSize: "10px", opacity: 0.7 }}>
-          📅 {startDate} - {endDate}
+        <span className="text-xs">
+          📅 Du {formatDate(startDate)} au {formatDate(endDate)}
         </span>
       )}
     </div>

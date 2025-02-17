@@ -86,3 +86,11 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.fc-daygrid-event {
+  border-radius: 15px !important;
+}
+
+.fc-h-event {
+  border: 1px solid #e2e8f0 !important;
+}

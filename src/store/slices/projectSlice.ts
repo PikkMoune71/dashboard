@@ -3,6 +3,12 @@ import { Project } from "@/types/Project";
 import { fetchProjects } from "../actions/projectsAction";
 import { updateProjectAction } from "../actions/projectsAction";
 import { deleteProjectAction } from "../actions/projectsAction";
+import {
+  addTaskAction,
+  removeTaskAction,
+  updateTaskAction,
+} from "../actions/tasksAction";
+import { Task } from "@/types/Task";
 
 interface ProjectsState {
   projects: Project[];
@@ -72,6 +78,47 @@ const projectsSlice = createSlice({
       .addCase(deleteProjectAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Erreur inconnue";
+      })
+      .addCase(updateTaskAction.fulfilled, (state, action) => {
+        const updatedTask: Task = action.payload;
+
+        state.projects = state.projects.map((project) => {
+          if (project.id === updatedTask.projectId) {
+            return {
+              ...project,
+              tasks: project?.tasks?.map((task) =>
+                task.id === updatedTask.id ? { ...task, ...updatedTask } : task
+              ),
+            };
+          }
+          return project;
+        });
+      })
+      .addCase(addTaskAction.fulfilled, (state, action) => {
+        const newTask: Task = action.payload;
+
+        state.projects = state.projects.map((project) => {
+          if (project.id === newTask.projectId) {
+            return {
+              ...project,
+              tasks: [...(project.tasks || []), newTask],
+            };
+          }
+          return project;
+        });
+      })
+      .addCase(removeTaskAction.fulfilled, (state, action) => {
+        const { projectId, taskId } = action.meta.arg;
+
+        state.projects = state.projects.map((project) => {
+          if (project.id === projectId) {
+            return {
+              ...project,
+              tasks: project.tasks?.filter((task) => task.id !== taskId),
+            };
+          }
+          return project;
+        });
       });
   },
 });

@@ -16,13 +16,16 @@ import { Project } from "@/types/Project";
 import { AppDispatch } from "@/store/store";
 import { useDispatch } from "react-redux";
 import { fetchProjects } from "@/store/actions/projectsAction";
+import { Button } from "./ui/button";
 
 export function AppSidebar({
   onProjectClick,
   onAccountClick,
+  onCalendarClick,
 }: {
   onProjectClick: (project: Project) => void;
   onAccountClick: () => void;
+  onCalendarClick: () => void;
 }) {
   const { user, loading } = useUser();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -37,7 +40,6 @@ export function AppSidebar({
   }, [dispatch]);
 
   if (loading || !user) return null;
-
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -50,6 +52,15 @@ export function AppSidebar({
               setProjects([...projects, { title, slug }])
             }
           />
+          <div className="mt-4">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={onCalendarClick}
+            >
+              📅 Voir le calendrier
+            </Button>
+          </div>
         </div>
         <NavProjects projects={projects} onProjectClick={onProjectClick} />
       </SidebarContent>

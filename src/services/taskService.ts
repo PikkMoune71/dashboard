@@ -40,6 +40,8 @@ export const getTasks = async (projectId: string): Promise<Task[]> => {
           taskData.createdAt instanceof Timestamp
             ? taskData.createdAt.toDate().toISOString()
             : taskData.createdAt,
+        startDate: taskData.startDate,
+        endDate: taskData.endDate,
       });
     });
 
@@ -98,6 +100,8 @@ export const updateTask = async (
       description: updatedTask.description,
       status: updatedTask.status,
       projectId: updatedTask.projectId,
+      startDate: updatedTask.startDate,
+      endDate: updatedTask.endDate,
     });
 
     return updatedTask;

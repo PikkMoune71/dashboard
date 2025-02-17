@@ -19,19 +19,29 @@ import { Project } from "@/types/Project";
 import { AddProject } from "@/components/AddProject";
 import { ProjectBoard } from "@/components/ProjectBoard";
 import { Account } from "@/components/Account";
+import Calendar from "@/components/Calendar";
 
 export default function Page() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [showAccount, setShowAccount] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   const handleProjectClick = (project: Project) => {
     setSelectedProject(project);
     setShowAccount(false);
+    setShowCalendar(false);
   };
 
   const handleShowAccount = () => {
     setShowAccount(true);
+    setShowCalendar(false);
+  };
+
+  const handleShowCalendar = () => {
+    setShowCalendar(true);
+    setShowAccount(false);
+    setSelectedProject(null);
   };
 
   return (
@@ -39,6 +49,7 @@ export default function Page() {
       <AppSidebar
         onProjectClick={handleProjectClick}
         onAccountClick={handleShowAccount}
+        onCalendarClick={handleShowCalendar}
       />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2">
@@ -49,10 +60,14 @@ export default function Page() {
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
                   <BreadcrumbLink href="#">
-                    {showAccount ? "Mon compte" : "Liste des projets"}
+                    {showAccount
+                      ? "Mon compte"
+                      : showCalendar
+                      ? "Calendrier"
+                      : "Liste des projets"}
                   </BreadcrumbLink>
                 </BreadcrumbItem>
-                {!showAccount && (
+                {!showAccount && !showCalendar && (
                   <>
                     <BreadcrumbSeparator className="hidden md:block" />
                     <BreadcrumbItem>
@@ -67,7 +82,7 @@ export default function Page() {
           </div>
         </header>
 
-        {!showAccount ? (
+        {!showAccount && !showCalendar ? (
           <>
             {!selectedProject && (
               <div className="flex flex-col items-center justify-center p-8 rounded-lg h-full bg-muted/50">
@@ -92,6 +107,10 @@ export default function Page() {
               {selectedProject && <ProjectBoard project={selectedProject} />}
             </div>
           </>
+        ) : showCalendar ? (
+          <div className="p-4">
+            <Calendar />
+          </div>
         ) : (
           <Account />
         )}

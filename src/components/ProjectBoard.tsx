@@ -45,6 +45,9 @@ import {
 } from "./ui/dropdown-menu";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { truncateText } from "@/composables/useTruncatedText";
+import { Label } from "./ui/label";
+import ColorPicker from "./ColorPicker";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 const statusColors = {
   todo: "bg-indigo-200 text-indigo-700",
@@ -64,19 +67,31 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
   const [newTaskTitle, setNewTaskTitle] = useState<string>("");
   const [newTaskDescription, setNewTaskDescription] = useState<string>("");
   const [newTaskStatus, setNewTaskStatus] = useState<Task["status"]>("todo");
+  const [newTaskStartDate, setNewTaskStartDate] = useState<string>("");
+  const [newTaskEndDate, setNewTaskEndDate] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [status, setStatus] = useState<Task["status"] | undefined>(undefined);
   const [titleProject, setTitleProject] = useState<string>(project.title);
+  const [colorProject, setColorProject] = useState<string>(
+    project.color || "bg-slate-500"
+  );
+  const [isColorPickerVisible, setIsColorPickerVisible] =
+    useState<boolean>(false);
   const [editTaskId, setEditTaskId] = useState<string | null>(null);
   const [editTaskTitle, setEditTaskTitle] = useState<string>("");
   const [editTaskDescription, setEditTaskDescription] = useState<string>("");
   const [editTaskStatus, setEditTaskStatus] = useState<Task["status"]>("todo");
+  const [editTaskStartDate, setEditTaskStartDate] = useState<string>("");
+  const [editTaskEndDate, setEditTaskEndDate] = useState<string>("");
 
   useEffect(() => {
     setTitleProject(project.title);
     if (project.id) {
       dispatch(fetchTasks(project.id));
+    }
+    if (project.color) {
+      setColorProject(project.color);
     }
   }, [dispatch, project]);
 
@@ -93,6 +108,16 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
       title: "Terminée",
       icon: "🎉",
     },
+  };
+
+  const handleProjectColorChange = (newColor: string) => {
+    setColorProject(newColor);
+    dispatch(
+      updateProjectAction({
+        userId: project.userId ?? "",
+        updatedProject: { ...project, color: newColor },
+      })
+    );
   };
 
   const handleDragEnd = (result: any) => {
@@ -131,6 +156,8 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
       description: newTaskDescription,
       projectId: project.id || "",
       createdAt: new Date().toISOString(),
+      startDate: newTaskStartDate,
+      endDate: newTaskEndDate,
     };
 
     await dispatch(
@@ -140,6 +167,8 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
     setNewTaskTitle("");
     setNewTaskDescription("");
     setNewTaskStatus("todo");
+    setNewTaskStartDate("");
+    setNewTaskEndDate("");
     setIsDialogOpen(false);
   };
 
@@ -156,11 +185,19 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
     }
   };
 
+  const formatDate = (date: string | undefined): string => {
+    if (!date) return "";
+    const d = new Date(date);
+    return d.toISOString().split("T")[0];
+  };
+
   const handleEditTask = (task: Task) => {
     setEditTaskId(task.id ?? "");
     setEditTaskTitle(task.title);
     setEditTaskDescription(task.description || "");
     setEditTaskStatus(task.status);
+    setEditTaskStartDate(formatDate(task.startDate));
+    setEditTaskEndDate(formatDate(task.endDate));
     setIsEditDialogOpen(true);
   };
 
@@ -172,6 +209,8 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
       title: editTaskTitle,
       description: editTaskDescription,
       status: editTaskStatus,
+      startDate: editTaskStartDate,
+      endDate: editTaskEndDate,
     };
 
     dispatch(updateTaskAction({ projectId: project.id ?? "", updatedTask }));
@@ -184,9 +223,41 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
 
   return (
     <div>
-      <div className="flex justify-between items-center p-4">
+      <div className="flex justify-between items-center p-4 flex-wrap gap-4">
         <div className="flex items-center gap-4">
           <EditButton value={titleProject} onSave={handleSaveEditButton} />
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <Popover
+                open={isColorPickerVisible}
+                onOpenChange={setIsColorPickerVisible}
+              >
+                <PopoverTrigger asChild>
+                  <div
+                    className={`w-10 h-10 rounded-full cursor-pointer ${colorProject}`}
+                  />
+                </PopoverTrigger>
+                <PopoverContent
+                  align="start"
+                  className="p-4 border rounded-md shadow-md"
+                >
+                  <h3 className="text-lg font-bold mb-4">
+                    Changer la couleur du projet
+                  </h3>
+                  <ColorPicker
+                    setColor={handleProjectColorChange}
+                    color={colorProject}
+                  />
+                  <Button
+                    className="bg-primary text-white w-full mt-4"
+                    onClick={() => setIsColorPickerVisible(false)}
+                  >
+                    Modifier
+                  </Button>
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -206,6 +277,24 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
               value={newTaskDescription}
               onChange={(e) => setNewTaskDescription(e.target.value)}
             />
+            <div>
+              <Label className="text-sm text-gray-500">Date de Début</Label>
+              <Input
+                type="date"
+                placeholder="Date de début"
+                value={newTaskStartDate}
+                onChange={(e) => setNewTaskStartDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label className="text-sm text-gray-500">Date de Fin</Label>
+              <Input
+                type="date"
+                placeholder="Date de fin"
+                value={newTaskEndDate}
+                onChange={(e) => setNewTaskEndDate(e.target.value)}
+              />
+            </div>
             <Select
               value={newTaskStatus}
               onValueChange={(value) => {
@@ -257,6 +346,24 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
             value={editTaskDescription}
             onChange={(e) => setEditTaskDescription(e.target.value)}
           />
+          <div>
+            <Label className="text-sm text-gray-500">Date de Début</Label>
+            <Input
+              type="date"
+              placeholder="Date de début"
+              value={editTaskStartDate}
+              onChange={(e) => setEditTaskStartDate(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label className="text-sm text-gray-500">Date de Fin</Label>
+            <Input
+              type="date"
+              placeholder="Date de fin"
+              value={editTaskEndDate}
+              onChange={(e) => setEditTaskEndDate(e.target.value)}
+            />
+          </div>
           <Select
             value={editTaskStatus}
             onValueChange={(value) =>

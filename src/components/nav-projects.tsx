@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  ClipboardList,
-  Folder,
-  Forward,
-  MoreHorizontal,
-  Trash2,
-} from "lucide-react";
+import { Folder, Forward, MoreHorizontal, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -113,7 +107,9 @@ export function NavProjects({
                   onProjectClick(project);
                 }}
               >
-                <ClipboardList />
+                <span
+                  className={`${project.color} w-4 h-4 rounded-full`}
+                ></span>
                 <span>{project.title}</span>
               </a>
             </SidebarMenuButton>

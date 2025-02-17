@@ -40,6 +40,19 @@ export function Account() {
       ...editableUser!,
       [field]: e.target.value,
     });
+
+    try {
+      // Validation instantanée à chaque modification
+      userSchema.pick({ [field]: true }).parse({
+        [field]: e.target.value,
+      });
+      setErrors((prevErrors) => ({ ...prevErrors, [field]: "" }));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessage = error.errors[0]?.message || "Erreur de validation";
+        setErrors((prevErrors) => ({ ...prevErrors, [field]: errorMessage }));
+      }
+    }
   };
 
   const handleSave = async () => {
@@ -130,6 +143,7 @@ export function Account() {
                     className="w-full p-2 border border-gray-300"
                     value={editableUser?.lastName || ""}
                     onChange={(e) => handleChange(e, "lastName")}
+                    error={errors.lastName}
                   />
                 ) : (
                   <p>{editableUser?.lastName || "Inconnu"}</p>
@@ -146,6 +160,7 @@ export function Account() {
                     className="w-full p-2 border border-gray-300"
                     value={editableUser?.firstName || ""}
                     onChange={(e) => handleChange(e, "firstName")}
+                    error={errors.firstName}
                   />
                 ) : (
                   <p>{editableUser?.firstName || "Inconnu"}</p>
@@ -156,7 +171,6 @@ export function Account() {
               </div>
               <div className="my-2">
                 <Label className="text-primary">Email</Label>
-
                 <p className="text-md">{editableUser?.email || "Non fourni"}</p>
               </div>
               <div className="my-2">
@@ -167,14 +181,12 @@ export function Account() {
                     className="w-full p-2 border border-gray-300"
                     value={editableUser?.phone || ""}
                     onChange={(e) => handleChange(e, "phone")}
+                    error={errors.phone}
                   />
                 ) : (
                   <p className="text-md">
                     {editableUser?.phone || "Aucun numéro de téléphone"}
                   </p>
-                )}
-                {errors.phone && (
-                  <p className="text-red-500 text-sm">{errors.phone}</p>
                 )}
               </div>
               <div className="my-2">
@@ -184,6 +196,7 @@ export function Account() {
                     className="w-full p-2 border border-gray-300"
                     value={editableUser?.bio || ""}
                     onChange={(e) => handleChange(e, "bio")}
+                    error={errors.bio}
                   />
                 ) : (
                   <p className="text-md">

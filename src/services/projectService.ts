@@ -12,6 +12,7 @@ import {
 import { getAuth } from "firebase/auth";
 import { Project } from "@/types/Project";
 import { generateSlug } from "@/composables/useGenerateSlug";
+import { Task } from "@/types/Task";
 
 export const getProjects = async (): Promise<Project[]> => {
   const auth = getAuth();
@@ -26,31 +27,55 @@ export const getProjects = async (): Promise<Project[]> => {
     const q = query(projectsRef, where("userId", "==", user.uid));
     const querySnapshot = await getDocs(q);
 
-    const projects: Project[] = [];
-    querySnapshot.forEach((doc) => {
-      const projectData = doc.data();
-      projects.push({
-        id: doc.id,
-        title: projectData.title,
-        slug: projectData.slug,
-        createdAt:
-          projectData.createdAt instanceof Timestamp
-            ? projectData.createdAt.toDate().toISOString()
-            : projectData.createdAt,
-        userId: projectData.userId,
-      });
-    });
+    const projects: Project[] = await Promise.all(
+      querySnapshot.docs.map(async (docSnapshot) => {
+        const projectData = docSnapshot.data();
+        const tasksRef = collection(db, "tasks");
+        const tasksQuery = query(
+          tasksRef,
+          where("projectId", "==", docSnapshot.id)
+        );
+        const tasksSnapshot = await getDocs(tasksQuery);
 
-    projects.sort((a, b) => {
-      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return dateB - dateA;
-    });
+        const tasks: Task[] = tasksSnapshot.docs.map((taskDoc) => ({
+          id: taskDoc.id,
+          title: taskDoc.data().title,
+          description: taskDoc.data().description,
+          status: taskDoc.data().status,
+          projectId: taskDoc.data().projectId,
+          createdAt:
+            taskDoc.data().createdAt instanceof Timestamp
+              ? taskDoc.data().createdAt.toDate().toISOString()
+              : taskDoc.data().createdAt,
+          startDate:
+            taskDoc.data().startDate instanceof Timestamp
+              ? taskDoc.data().startDate.toDate().toISOString()
+              : taskDoc.data().startDate,
+          endDate:
+            taskDoc.data().endDate instanceof Timestamp
+              ? taskDoc.data().endDate.toDate().toISOString()
+              : taskDoc.data().endDate,
+        }));
+
+        return {
+          id: docSnapshot.id,
+          title: projectData.title,
+          slug: projectData.slug,
+          color: projectData.color,
+          createdAt:
+            projectData.createdAt instanceof Timestamp
+              ? projectData.createdAt.toDate().toISOString()
+              : projectData.createdAt,
+          userId: projectData.userId,
+          tasks,
+        };
+      })
+    );
 
     return projects;
   } catch (error) {
     console.error("Erreur lors de la récupération des projets : ", error);
-    throw new Error("Erreur lors de la récupération des projets");
+    throw new Error("Erreur lors de la récupération des projets.");
   }
 };
 

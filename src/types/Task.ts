@@ -5,4 +5,6 @@ export interface Task {
   status: "todo" | "inProgress" | "done";
   projectId: string;
   createdAt?: string;
+  startDate?: string;
+  endDate?: string;
 }

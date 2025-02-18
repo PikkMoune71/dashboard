@@ -70,12 +70,10 @@ const tasksSlice = createSlice({
         state.loading = true;
       })
       .addCase(updateTaskAction.fulfilled, (state, action) => {
-        const index = state.tasks.findIndex(
-          (task) => task.id === action.payload.id
+        state.tasks = state.tasks.map((task) =>
+          task.id === action.payload.id ? { ...task, ...action.payload } : task
         );
-        if (index !== -1) {
-          state.tasks[index] = action.payload;
-        }
+
         state.loading = false;
       })
       .addCase(updateTaskAction.rejected, (state, action) => {

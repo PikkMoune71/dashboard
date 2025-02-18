@@ -28,9 +28,13 @@ export function useUser() {
         if (userDocSnap.exists()) {
           const userData = userDocSnap.data();
           const userLogged = {
-            name: `${userData.firstName} ${userData.lastName}`,
+            id: authUser.uid,
+            firstName: userData.firstName || "Prénom inconnu",
+            lastName: userData.lastName || "Nom inconnu",
             email: userData.email || "Email inconnu",
             avatar: userData.avatar || "/default-avatar.png",
+            bio: userData.bio,
+            phone: userData.phone,
           };
 
           setUser(userLogged);

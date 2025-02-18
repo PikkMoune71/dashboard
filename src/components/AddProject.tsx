@@ -21,14 +21,16 @@ import { useToast } from "@/hooks/use-toast";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store/store";
 import { fetchProjects } from "@/store/actions/projectsAction";
+import ColorPicker from "./ColorPicker";
 
 interface AddProjectProps {
-  onAddProject: (title: string, slug: string) => void;
+  onAddProject: (title: string, slug: string, color: string) => void;
 }
 
 export const AddProject: React.FC<AddProjectProps> = ({ onAddProject }) => {
   const [title, setTitle] = useState<string>("");
   const [slug, setSlug] = useState<string>("");
+  const [color, setColor] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
   const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
@@ -54,15 +56,17 @@ export const AddProject: React.FC<AddProjectProps> = ({ onAddProject }) => {
       await addDoc(collection(db, "projects"), {
         title,
         slug,
+        color,
         createdAt: new Date().toISOString(),
         userId: user.uid,
       });
 
       dispatch(fetchProjects());
-
-      onAddProject(title, slug);
+      console.log("color", color);
+      onAddProject(title, slug, color);
       setTitle("");
       setSlug("");
+      setColor("");
       setOpen(false);
       toast({
         title: "Projet ajouté !",
@@ -95,10 +99,8 @@ export const AddProject: React.FC<AddProjectProps> = ({ onAddProject }) => {
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="title" className="text-right">
-              Titre du projet
-            </Label>
+          <div className="flex flex-col">
+            <Label htmlFor="title">Titre du projet</Label>
             <Input
               id="title"
               value={title}
@@ -106,10 +108,8 @@ export const AddProject: React.FC<AddProjectProps> = ({ onAddProject }) => {
               className="col-span-3"
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="slug" className="text-right">
-              Slug
-            </Label>
+          <div className="flex flex-col">
+            <Label htmlFor="slug">Slug</Label>
             <Input
               id="slug"
               value={slug}
@@ -117,6 +117,7 @@ export const AddProject: React.FC<AddProjectProps> = ({ onAddProject }) => {
               disabled
             />
           </div>
+          <ColorPicker setColor={setColor} />
         </div>
         <DialogFooter>
           <Button type="button" onClick={handleAddProject}>

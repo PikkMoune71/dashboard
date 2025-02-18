@@ -9,6 +9,7 @@ import {
   doc,
   deleteDoc,
   Timestamp,
+  getDoc,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { Task } from "@/types/Task";
@@ -40,6 +41,8 @@ export const getTasks = async (projectId: string): Promise<Task[]> => {
           taskData.createdAt instanceof Timestamp
             ? taskData.createdAt.toDate().toISOString()
             : taskData.createdAt,
+        startDate: taskData.startDate,
+        endDate: taskData.endDate,
       });
     });
 
@@ -75,7 +78,6 @@ export const addTask = async (projectId: string, task: Task): Promise<Task> => {
   }
 };
 
-// Mettre à jour une tâche
 export const updateTask = async (
   projectId: string,
   updatedTask: Task
@@ -87,18 +89,37 @@ export const updateTask = async (
     throw new Error("Utilisateur non connecté");
   }
 
-  try {
-    if (!updatedTask || !updatedTask.id) {
-      throw new Error("Task ID is undefined or task is not defined");
-    }
+  if (!updatedTask || !updatedTask.id) {
+    throw new Error("Task ID is undefined or task is not defined");
+  }
 
+  try {
+    // Mettre à jour la tâche dans la collection "tasks"
     const taskDocRef = doc(db, "tasks", updatedTask.id);
     await updateDoc(taskDocRef, {
       title: updatedTask.title,
       description: updatedTask.description,
       status: updatedTask.status,
       projectId: updatedTask.projectId,
+      startDate: updatedTask.startDate,
+      endDate: updatedTask.endDate,
     });
+
+    // Mettre à jour la tâche dans le projet concerné
+    const projectDocRef = doc(db, "projects", projectId);
+    const projectSnapshot = await getDoc(projectDocRef);
+
+    if (projectSnapshot.exists()) {
+      const projectData = projectSnapshot.data();
+
+      if (projectData.tasks) {
+        const updatedTasks = projectData.tasks.map((task: Task) =>
+          task.id === updatedTask.id ? { ...task, ...updatedTask } : task
+        );
+
+        await updateDoc(projectDocRef, { tasks: updatedTasks });
+      }
+    }
 
     return updatedTask;
   } catch (error) {

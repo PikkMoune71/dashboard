@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import { ChevronsUpDown, LogOut, User, User2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -17,15 +18,17 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { signOut } from "firebase/auth";
-import { auth } from "@/app/firebase/config";
+import { auth, db } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { doc, onSnapshot } from "firebase/firestore";
 
 export function NavUser({
-  user,
+  user: initialUser,
   onShowAccount,
 }: {
   user: {
+    id?: string;
     firstName?: string;
     lastName?: string;
     email: string;
@@ -35,6 +38,21 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
+  const [user, setUser] = useState(initialUser);
+
+  useEffect(() => {
+    if (!initialUser.id) return;
+
+    const userRef = doc(db, "users", initialUser.id);
+    const unsubscribe = onSnapshot(userRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setUser((prev) => ({ ...prev, avatar: docSnap.data().avatar }));
+      }
+    });
+
+    return () => unsubscribe();
+  }, [initialUser.id]);
+
   const name = `${user.firstName} ${user.lastName}`;
 
   const handleLogout = async () => {

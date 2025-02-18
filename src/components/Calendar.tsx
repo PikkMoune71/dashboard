@@ -9,6 +9,7 @@ import { RootState } from "@/store/store";
 import { useRef, useEffect, useState } from "react";
 import { Project } from "@/types/Project";
 import { Event } from "@/types/Event";
+import { formatDateToFrench } from "@/composables/useFormatDate";
 
 const Calendar = () => {
   const calendarRef = useRef<FullCalendar | null>(null);
@@ -47,23 +48,30 @@ const Calendar = () => {
   }, [projects]);
 
   return (
-    <FullCalendar
-      key={JSON.stringify(events)}
-      ref={calendarRef}
-      plugins={[dayGridPlugin, interactionPlugin]}
-      initialView="dayGridWeek"
-      events={events}
-      eventContent={renderEventContent}
-    />
+    <div className="calendar-container p-4 ">
+      <FullCalendar
+        locale={"fr"}
+        key={JSON.stringify(events)}
+        ref={calendarRef}
+        plugins={[dayGridPlugin, interactionPlugin]}
+        initialView="dayGridWeek"
+        events={events}
+        eventContent={renderEventContent}
+        headerToolbar={{
+          left: "prev,next today",
+          center: "title",
+          right: "dayGridMonth,dayGridWeek,dayGridDay",
+        }}
+        buttonText={{
+          today: "Aujourd'hui",
+          month: "Mois",
+          week: "Semaine",
+          day: "Jour",
+        }}
+        height="auto"
+      />
+    </div>
   );
-};
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
 };
 
 const renderEventContent = (eventInfo: any) => {
@@ -93,7 +101,7 @@ const renderEventContent = (eventInfo: any) => {
       <div className="mb-2">{projectName}</div>
       {isMultiDay && (
         <span className="text-xs">
-          📅 Du {formatDate(startDate)} au {formatDate(endDate)}
+          📅 Du {formatDateToFrench(startDate)} au {formatDateToFrench(endDate)}
         </span>
       )}
     </div>

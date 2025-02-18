@@ -94,3 +94,19 @@ body {
 .fc-h-event {
   border: 1px solid #e2e8f0 !important;
 }
+
+.fc .fc-button {
+  background-color: hsl(var(--primary));
+  color: white;
+  border-radius: 12px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.2s ease-in-out;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled):hover {
+  background-color: #1e40af !important;
+}

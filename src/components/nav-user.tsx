@@ -18,13 +18,13 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { signOut } from "firebase/auth";
-import { auth, db } from "@/app/firebase/config"; // Import Firestore
+import { auth, db } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-import { doc, onSnapshot } from "firebase/firestore"; // Import Firestore
+import { doc, onSnapshot } from "firebase/firestore";
 
 export function NavUser({
-  user: initialUser, // Renommé pour éviter conflit
+  user: initialUser,
   onShowAccount,
 }: {
   user: {
@@ -38,20 +38,19 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
-  const [user, setUser] = useState(initialUser); // Stocker le user dans un état local
+  const [user, setUser] = useState(initialUser);
 
-  // Met à jour l'avatar en temps réel avec Firestore
   useEffect(() => {
-    if (!initialUser.id) return; // Évite d'écouter un utilisateur sans ID
+    if (!initialUser.id) return;
 
     const userRef = doc(db, "users", initialUser.id);
     const unsubscribe = onSnapshot(userRef, (docSnap) => {
       if (docSnap.exists()) {
-        setUser((prev) => ({ ...prev, avatar: docSnap.data().avatar })); // Met à jour l'avatar
+        setUser((prev) => ({ ...prev, avatar: docSnap.data().avatar }));
       }
     });
 
-    return () => unsubscribe(); // Nettoie l'écouteur Firestore
+    return () => unsubscribe();
   }, [initialUser.id]);
 
   const name = `${user.firstName} ${user.lastName}`;

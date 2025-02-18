@@ -47,14 +47,29 @@ const Calendar = () => {
   }, [projects]);
 
   return (
-    <FullCalendar
-      key={JSON.stringify(events)}
-      ref={calendarRef}
-      plugins={[dayGridPlugin, interactionPlugin]}
-      initialView="dayGridWeek"
-      events={events}
-      eventContent={renderEventContent}
-    />
+    <div className="calendar-container p-4 ">
+      <FullCalendar
+        locale={"fr"}
+        key={JSON.stringify(events)}
+        ref={calendarRef}
+        plugins={[dayGridPlugin, interactionPlugin]}
+        initialView="dayGridWeek"
+        events={events}
+        eventContent={renderEventContent}
+        headerToolbar={{
+          left: "prev,next today",
+          center: "title",
+          right: "dayGridMonth,dayGridWeek,dayGridDay",
+        }}
+        buttonText={{
+          today: "Aujourd'hui",
+          month: "Mois",
+          week: "Semaine",
+          day: "Jour",
+        }}
+        height="auto"
+      />
+    </div>
   );
 };
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { userSchema } from "@/app/schemas/userSchemas";
 import { z } from "zod";
 import { useState, useEffect } from "react";
@@ -42,10 +43,11 @@ export function Account() {
     });
 
     try {
-      // Validation instantanée à chaque modification
-      userSchema.pick({ [field]: true }).parse({
-        [field]: e.target.value,
-      });
+      (
+        userSchema.shape[
+          field as keyof typeof userSchema.shape
+        ] as z.ZodType<any>
+      ).parse(e.target.value);
       setErrors((prevErrors) => ({ ...prevErrors, [field]: "" }));
     } catch (error) {
       if (error instanceof z.ZodError) {

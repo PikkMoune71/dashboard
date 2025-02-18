@@ -44,7 +44,6 @@ const Calendar = () => {
     );
 
     setEvents(updatedEvents);
-    console.log(projects);
   }, [projects]);
 
   return (

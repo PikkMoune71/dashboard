@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import { ChevronsUpDown, LogOut, User, User2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -17,15 +18,17 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { signOut } from "firebase/auth";
-import { auth } from "@/app/firebase/config";
+import { auth, db } from "@/app/firebase/config"; // Import Firestore
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { doc, onSnapshot } from "firebase/firestore"; // Import Firestore
 
 export function NavUser({
-  user,
+  user: initialUser, // Renommé pour éviter conflit
   onShowAccount,
 }: {
   user: {
+    id: string;
     firstName?: string;
     lastName?: string;
     email: string;
@@ -35,6 +38,22 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
+  const [user, setUser] = useState(initialUser); // Stocker le user dans un état local
+
+  // Met à jour l'avatar en temps réel avec Firestore
+  useEffect(() => {
+    if (!initialUser.id) return; // Évite d'écouter un utilisateur sans ID
+
+    const userRef = doc(db, "users", initialUser.id);
+    const unsubscribe = onSnapshot(userRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setUser((prev) => ({ ...prev, avatar: docSnap.data().avatar })); // Met à jour l'avatar
+      }
+    });
+
+    return () => unsubscribe(); // Nettoie l'écouteur Firestore
+  }, [initialUser.id]);
+
   const name = `${user.firstName} ${user.lastName}`;
 
   const handleLogout = async () => {

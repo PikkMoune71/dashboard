@@ -18,6 +18,8 @@ export function Account() {
   const [isEditing, setIsEditing] = useState(false);
   const [editableUser, setEditableUser] = useState(user);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -57,10 +59,28 @@ export function Account() {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+
+      // Prévisualisation
+      const previewUrl = URL.createObjectURL(selectedFile);
+      setPreview(previewUrl);
+
+      // Conversion en base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === "string") {
+          setImageBase64(reader.result); // Stocke l'image en base64
+        }
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+  };
+
   const handleSave = async () => {
     try {
       setErrors({});
-
       userSchema.parse(editableUser);
 
       if (editableUser?.id) {
@@ -70,6 +90,7 @@ export function Account() {
           lastName: editableUser.lastName || "",
           phone: editableUser.phone || "",
           bio: editableUser.bio || "",
+          avatar: imageBase64 || editableUser.avatar || "",
         });
 
         setIsEditing(false);
@@ -110,10 +131,10 @@ export function Account() {
         <p>Chargement...</p>
       ) : (
         <>
-          <Card className="flex items-center justify-between gap-4 p-5 rounded-2xl flex-wrap">
-            <div className="flex items-center gap-4 flex-wrap">
+          <Card className="flex items-center gap-4 p-5 rounded-2xl flex-wrap">
+            <div className="relative flex items-center gap-4 flex-wrap">
               <Image
-                src={editableUser?.avatar || "/default-avatar.png"}
+                src={preview || editableUser?.avatar || "/default-avatar.png"}
                 alt={editableUser?.firstName || "User Avatar"}
                 width={100}
                 height={100}
@@ -122,13 +143,28 @@ export function Account() {
                   e.currentTarget.src = "/default-avatar.png";
                 }}
               />
-              <div className="flex flex-col gap-1">
-                <p className="text-xl">{name}</p>
-                <p className="text-slate-500">{editableUser?.email}</p>
-                <p className="text-gray-400 text-sm">
-                  {editableUser?.bio ?? "Aucune biographie"}
-                </p>
-              </div>
+
+              {isEditing && (
+                <div className="absolute bottom-0 right-0 p-2 w-10 h-10 bg-primary text-white rounded-full cursor-pointer">
+                  <div className="flex">
+                    <Input
+                      type="file"
+                      className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
+                    <Pencil size={24} />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <p className="text-xl">{name}</p>
+              <p className="text-slate-500">{editableUser?.email}</p>
+              <p className="text-gray-400 text-sm">
+                {editableUser?.bio ?? "Aucune biographie"}
+              </p>
             </div>
           </Card>
 

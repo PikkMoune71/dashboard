@@ -223,7 +223,17 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
     return tasks.sort((a, b) => {
       const dateA = new Date(a.startDate || "");
       const dateB = new Date(b.startDate || "");
-      return dateA.getTime() - dateB.getTime(); // Tri croissant
+
+      if (a.status === "done" && b.status === "done") {
+        return dateB.getTime() - dateA.getTime(); // Décroissant
+      }
+
+      // Si une des tâches est "done", on donne priorité à cette tâche
+      if (a.status === "done") return -1;
+      if (b.status === "done") return 1;
+
+      // Si aucune des tâches n'est "done", on fait un tri croissant normal
+      return dateA.getTime() - dateB.getTime(); // Croissant
     });
   };
 

@@ -8,8 +8,21 @@ interface ColorPickerProps {
 }
 
 const ColorPicker: React.FC<ColorPickerProps> = ({ color, setColor }) => {
-  const [baseColor, setBaseColor] = useState<string>("slate");
-  const [intensity, setIntensity] = useState<string>("500");
+  const getInitialColor = () => {
+    if (color) {
+      const parts = color.split("-");
+      return {
+        base: parts[1] || "slate",
+        intensity: parts[2] || "500",
+      };
+    }
+    return { base: "slate", intensity: "500" };
+  };
+
+  const [baseColor, setBaseColor] = useState<string>(getInitialColor().base);
+  const [intensity, setIntensity] = useState<string>(
+    getInitialColor().intensity
+  );
   const baseColors = [
     "slate",
     "stone",
@@ -64,7 +77,12 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ color, setColor }) => {
         {baseColors.map((color) => (
           <Button
             key={color}
-            className={`w-10 h-10 rounded-full bg-${color}-500 hover:ring-2 hover:ring-white transition-all`}
+            className={`w-10 h-10 rounded-full bg-${color}-500 transition-all 
+              ${
+                baseColor === color
+                  ? "ring-2 ring-primary hover:bg-${color}-500"
+                  : "hover:ring-2 hover:ring-primary hover:bg-${color}-500"
+              }`}
             onClick={() => handleColorChange(color)}
           />
         ))}
@@ -75,11 +93,12 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ color, setColor }) => {
         {intensities.map((int) => (
           <Button
             key={int}
-            className={`w-10 h-10 rounded-full ${
-              selectedColor === `bg-${baseColor}-${int}`
-                ? "ring-4 ring-white"
-                : ""
-            } bg-${baseColor}-${int} hover:ring-2 hover:ring-white transition-all`}
+            className={`w-10 h-10 rounded-full bg-${baseColor}-${int} transition-all 
+              ${
+                intensity === int
+                  ? "ring-2 ring-primary hover:bg-${baseColor}-${int}"
+                  : "hover:ring-2 hover:ring-primary hover:bg-${baseColor}-${int}"
+              }`}
             onClick={() => handleIntensityChange(int)}
           />
         ))}

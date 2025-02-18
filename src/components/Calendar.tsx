@@ -9,6 +9,7 @@ import { RootState } from "@/store/store";
 import { useRef, useEffect, useState } from "react";
 import { Project } from "@/types/Project";
 import { Event } from "@/types/Event";
+import { formatDateToFrench } from "@/composables/useFormatDate";
 
 const Calendar = () => {
   const calendarRef = useRef<FullCalendar | null>(null);
@@ -73,14 +74,6 @@ const Calendar = () => {
   );
 };
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-};
-
 const renderEventContent = (eventInfo: any) => {
   const { projectName, projectColor, isMultiDay, startDate, endDate, status } =
     eventInfo.event.extendedProps as Event["extendedProps"];
@@ -108,7 +101,7 @@ const renderEventContent = (eventInfo: any) => {
       <div className="mb-2">{projectName}</div>
       {isMultiDay && (
         <span className="text-xs">
-          📅 Du {formatDate(startDate)} au {formatDate(endDate)}
+          📅 Du {formatDateToFrench(startDate)} au {formatDateToFrench(endDate)}
         </span>
       )}
     </div>

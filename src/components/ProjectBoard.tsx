@@ -48,6 +48,10 @@ import { truncateText } from "@/composables/useTruncatedText";
 import { Label } from "./ui/label";
 import ColorPicker from "./ColorPicker";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import {
+  formatDateToFrench,
+  formatDateToISO,
+} from "@/composables/useFormatDate";
 
 const statusColors = {
   todo: "bg-indigo-200 text-indigo-700",
@@ -185,19 +189,13 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
     }
   };
 
-  const formatDate = (date: string | undefined): string => {
-    if (!date) return "";
-    const d = new Date(date);
-    return d.toISOString().split("T")[0];
-  };
-
   const handleEditTask = (task: Task) => {
     setEditTaskId(task.id ?? "");
     setEditTaskTitle(task.title);
     setEditTaskDescription(task.description || "");
     setEditTaskStatus(task.status);
-    setEditTaskStartDate(formatDate(task.startDate));
-    setEditTaskEndDate(formatDate(task.endDate));
+    setEditTaskStartDate(formatDateToISO(task.startDate));
+    setEditTaskEndDate(formatDateToISO(task.endDate));
     setIsEditDialogOpen(true);
   };
 
@@ -221,6 +219,56 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
     dispatch(removeTaskAction({ projectId, taskId }));
   };
 
+  const sortTasksByStartDate = (tasks: Task[]) => {
+    return tasks.sort((a, b) => {
+      const dateA = new Date(a.startDate || "");
+      const dateB = new Date(b.startDate || "");
+      return dateA.getTime() - dateB.getTime(); // Tri croissant
+    });
+  };
+
+  const formatTaskDates = (
+    startDate: string | undefined,
+    endDate: string | undefined,
+    status: string
+  ) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = startDate ? new Date(startDate) : null;
+    const end = endDate ? new Date(endDate) : null;
+
+    const isOverdue = (start && start < today) || (end && end < today);
+    const isUndefined = !startDate && !endDate;
+
+    const isToday =
+      (start && start.toDateString() === today.toDateString()) ||
+      (end && end.toDateString() === today.toDateString());
+    const isDone = status === "done";
+
+    const textClass =
+      (isUndefined || isOverdue) && !isToday && !isDone
+        ? "text-red-500 font-bold"
+        : "text-black";
+
+    if (start && end && start.getTime() === end.getTime()) {
+      return (
+        <span className={textClass}>
+          Le {startDate ? formatDateToFrench(startDate) : "Non défini"}
+        </span>
+      );
+    }
+
+    if (isUndefined) {
+      return <span className={textClass}>Non défini</span>;
+    }
+
+    return (
+      <span className={textClass}>
+        Du {startDate ? formatDateToFrench(startDate) : "Non défini"} au{" "}
+        {endDate ? formatDateToFrench(endDate) : "Non défini"}
+      </span>
+    );
+  };
   return (
     <div>
       <div className="flex justify-between items-center p-4 flex-wrap gap-4">
@@ -414,7 +462,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
                   >
                     {title} {icon}
                   </h2>
-                  {tasks
+                  {sortTasksByStartDate(tasks)
                     .filter((task: Task) => task.status === status)
                     .map((task: Task, index: any) => (
                       <Draggable
@@ -472,6 +520,15 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
                               </DropdownMenu>
                             </div>
                             <p className="text-sm">{task.description}</p>
+
+                            <span className="text-xs">
+                              📅{" "}
+                              {formatTaskDates(
+                                task.startDate,
+                                task.endDate,
+                                task.status
+                              )}
+                            </span>
                           </Card>
                         )}
                       </Draggable>

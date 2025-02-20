@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Separator } from "./ui/separator";
 
 export function NavProjects({
   onProjectClick,
@@ -89,7 +90,8 @@ export function NavProjects({
   };
 
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+    <SidebarGroup>
+      <Separator />
       <SidebarGroupLabel>Liste des projets</SidebarGroupLabel>
       {projects.length === 0 && (
         <SidebarGroupLabel className="text-muted-foreground">
@@ -108,9 +110,11 @@ export function NavProjects({
                 }}
               >
                 <span
-                  className={`${project.color} w-4 h-4 rounded-full`}
+                  className={`${project.color} w-4 h-4 rounded-full `}
                 ></span>
-                <span>{project.title}</span>
+                <span className="group-data-[collapsible=icon]:hidden">
+                  {project.title}
+                </span>
               </a>
             </SidebarMenuButton>
             <DropdownMenu>

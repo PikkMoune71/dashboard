@@ -86,9 +86,11 @@ export const AddProject: React.FC<AddProjectProps> = ({ onAddProject }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full group-data-[collapsible=icon]:hidden">
+        <Button className="w-full ">
           <Plus />
-          Nouveau Projet
+          <span className="group-data-[collapsible=icon]:hidden">
+            Nouveau Projet
+          </span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

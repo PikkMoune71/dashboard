@@ -20,6 +20,7 @@ import { auth } from "@/app/firebase/config";
 import { db } from "@/app/firebase/config";
 import { doc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export function RegisterForm({
   className,
@@ -98,7 +99,7 @@ export function RegisterForm({
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Inscription</CardTitle>
           <CardDescription>
-            Créer un compte sur la plateforme Todo List
+            Créer un compte sur la plateforme Taskk
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -134,7 +135,7 @@ export function RegisterForm({
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="John"
+                  placeholder="Prénom"
                   required
                 />
               </div>
@@ -145,7 +146,7 @@ export function RegisterForm({
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Doe"
+                  placeholder="Nom"
                   required
                 />
               </div>
@@ -175,6 +176,12 @@ export function RegisterForm({
                 {loading ? "Inscription..." : "Inscription"}
               </Button>
             </div>
+            <p className="text-center text-sm text-muted-foreground mt-4">
+              Déjà inscrit ?{" "}
+              <Link href="/login" className="text-primary">
+                Se connecter
+              </Link>
+            </p>
           </form>
         </CardContent>
       </Card>

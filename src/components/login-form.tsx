@@ -59,9 +59,7 @@ export function LoginForm({
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Se connecter</CardTitle>
-          <CardDescription>
-            Connexion à la plateforme de Todo List
-          </CardDescription>
+          <CardDescription>Connexion à la plateforme de Taskk</CardDescription>
         </CardHeader>
         <CardContent>
           <Button
@@ -91,7 +89,7 @@ export function LoginForm({
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="email@gmail.com"
+                  placeholder="m@example.com"
                   required
                 />
               </div>
@@ -112,7 +110,7 @@ export function LoginForm({
               </Button>
             </div>
           </form>
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-muted-foreground mt-4">
             Pas encore inscrit ?{" "}
             <Link href="/register" className="text-primary">
               S&apos;inscrire

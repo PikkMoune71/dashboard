@@ -21,8 +21,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Todo App",
-  description: "A simple todo app",
+  title: "Taskk | Gestion de tâches",
+  description: "Taskk est une application de gestion de tâches.",
 };
 
 export default function RootLayout({

@@ -430,7 +430,9 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
           >
             <SelectTrigger
               className={`p-2 rounded ${
-                status ? statusColors[status] : "bg-indigo-200 text-indigo-700"
+                editTaskStatus
+                  ? statusColors[editTaskStatus]
+                  : "bg-indigo-200 text-indigo-700"
               }`}
             >
               <SelectValue placeholder="Choisir un statut" />

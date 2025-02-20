@@ -17,6 +17,7 @@ import { AppDispatch } from "@/store/store";
 import { useDispatch } from "react-redux";
 import { fetchProjects } from "@/store/actions/projectsAction";
 import { Button } from "./ui/button";
+import { Separator } from "./ui/separator";
 
 export function AppSidebar({
   onProjectClick,
@@ -43,7 +44,13 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <Logo />
+        <div className="px-10 pt-3 group-data-[collapsible=icon]:hidden">
+          <Logo />
+        </div>
+        <div className="flex justify-center group-data-[state=expanded]:hidden">
+          <Logo isIcon />
+        </div>
+        <Separator />
       </SidebarHeader>
       <SidebarContent>
         <div className="px-2 mt-4">
@@ -52,13 +59,16 @@ export function AppSidebar({
               setProjects([...projects, { title, slug }])
             }
           />
-          <div className="mt-4">
+          <div className="my-2">
             <Button
               variant="outline"
               className="w-full font-semibold"
               onClick={onCalendarClick}
             >
-              📅 Calendrier
+              📅{" "}
+              <span className="group-data-[collapsible=icon]:hidden">
+                Calendrier
+              </span>
             </Button>
           </div>
         </div>

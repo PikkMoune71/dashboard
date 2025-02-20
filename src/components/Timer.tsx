@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import {
+  ArrowDownUp,
   MoreHorizontal,
   Pause,
   Play,
@@ -25,6 +26,14 @@ import {
 import { useSelector } from "react-redux";
 import { toast } from "@/hooks/use-toast";
 import { formatTime } from "@/composables/useFormatDate";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 const Timer = () => {
   const [seconds, setSeconds] = useState(0);
@@ -132,32 +141,31 @@ const Timer = () => {
                 <TimerIcon />
                 <span className="text-sm">Timer</span>
               </div>
-              <Popover>
-                <PopoverTrigger asChild>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <MoreHorizontal />
-                </PopoverTrigger>
-                <PopoverContent className="rounded-lg p-2 w-40">
-                  <Button
-                    variant="outline"
-                    onClick={changeProject}
-                    className="w-full cursor-pointer my-2"
-                  >
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="rounded-lg p-2">
+                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={changeProject}>
+                    <ArrowDownUp />
                     Changer de tâche
-                  </Button>
-                  <Button
-                    variant="outline"
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
                     onClick={resetTimer}
-                    className="w-full cursor-pointer border-red-500 text-red-500 hover:bg-red-500 hover:text-white my-2 active:bg-red-600"
+                    className="text-red-500"
                   >
-                    Reset
                     <TimerReset />
-                  </Button>
-                  <Button onClick={saveTimer} className="w-full cursor-pointer">
+                    Réinitialiser
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <Button onClick={saveTimer} className="w-full mt-2">
                     Enregistrer
                     <Save />
                   </Button>
-                </PopoverContent>
-              </Popover>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <div className="grid grid-cols-2 items-center">
               <div>

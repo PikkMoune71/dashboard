@@ -7,5 +7,5 @@ export interface Task {
   createdAt?: string;
   startDate?: string;
   endDate?: string;
-  timeSpent?: number;
+  timeSpent?: number[];
 }

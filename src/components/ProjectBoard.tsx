@@ -43,7 +43,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Timer, Trash2 } from "lucide-react";
 import { truncateText } from "@/composables/useTruncatedText";
 import { Label } from "./ui/label";
 import ColorPicker from "./ColorPicker";
@@ -51,6 +51,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import {
   formatDateToFrench,
   formatDateToISO,
+  formatTime,
 } from "@/composables/useFormatDate";
 
 const statusColors = {
@@ -533,14 +534,24 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
                             </div>
                             <p className="text-sm">{task.description}</p>
 
-                            <span className="text-xs">
-                              📅{" "}
-                              {formatTaskDates(
-                                task.startDate,
-                                task.endDate,
-                                task.status
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="text-xs">
+                                📅{" "}
+                                {formatTaskDates(
+                                  task.startDate,
+                                  task.endDate,
+                                  task.status
+                                )}
+                              </span>
+                              {task.timeSpent && (
+                                <div className="flex items-center">
+                                  <Timer width={20} />
+                                  <span className="text-xs mt-1">
+                                    {formatTime(task.timeSpent)}
+                                  </span>
+                                </div>
                               )}
-                            </span>
+                            </div>
                           </Card>
                         )}
                       </Draggable>

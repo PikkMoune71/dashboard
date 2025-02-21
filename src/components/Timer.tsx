@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import {
   ArrowDownUp,
@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "@/hooks/use-toast";
 import { formatTime } from "@/composables/useFormatDate";
 import {
@@ -35,41 +35,129 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
+import {
+  setIsRunning,
+  setSeconds,
+  setStoredTimes,
+} from "@/store/slices/timerSlice";
+import {
+  removeTimeFromFirestore,
+  saveTimeToFirestore,
+} from "@/store/actions/timerAction";
+
 const Timer = () => {
-  const [seconds, setSeconds] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const tasks = useSelector((state: any) => state.tasks.tasks);
+  const dispatch = useDispatch<any>();
+  const { isRunning, seconds, storedTimes } = useSelector(
+    (state: any) => state.timer
+  );
 
   useEffect(() => {
-    const storedTaskId = localStorage.getItem("selectedTaskId");
-    const storedStartTime = localStorage.getItem("timerStartTime");
-    const storedSeconds = localStorage.getItem("timerSeconds");
-    const storedIsRunning = localStorage.getItem("timerIsRunning");
-
-    if (storedTaskId) {
-      const task = tasks.find((task: Task) => task.id === storedTaskId);
-      setSelectedTask(task || null);
+    const savedTaskId = localStorage.getItem("selectedTaskId");
+    if (savedTaskId) {
+      const task = tasks.find((t: Task) => t.id === savedTaskId);
+      if (task) {
+        setSelectedTask(task);
+        dispatch(setStoredTimes(task.timeSpent || []));
+      }
     }
+  }, [tasks, dispatch]);
 
-    if (storedStartTime && storedIsRunning === "true") {
-      const now = Date.now();
-      const elapsedTime = Math.floor((now - parseInt(storedStartTime)) / 1000);
-      const totalSeconds =
-        (storedSeconds ? parseInt(storedSeconds) : 0) + elapsedTime;
-      setSeconds(totalSeconds);
-      setIsRunning(true);
-    } else if (storedSeconds) {
-      setSeconds(parseInt(storedSeconds));
+  const toggleTimer = () => {
+    if (isRunning) {
+      dispatch(setIsRunning(false));
+    } else {
+      dispatch(setIsRunning(true));
     }
-  }, [tasks]);
+  };
+
+  const resetTimer = () => {
+    dispatch(setIsRunning(false));
+    dispatch(setSeconds(0));
+  };
+
+  const saveTimer = () => {
+    if (selectedTask) {
+      const newStoredTimes = [...storedTimes, seconds];
+      dispatch(setStoredTimes(newStoredTimes));
+
+      const updatedTimeSpent = selectedTask.timeSpent
+        ? [...selectedTask.timeSpent, seconds]
+        : [seconds];
+
+      const task = {
+        ...selectedTask,
+        timeSpent: updatedTimeSpent,
+      };
+      dispatch(
+        saveTimeToFirestore({
+          taskId: task.id as string,
+          seconds,
+        })
+      );
+      setSelectedTask(task);
+      dispatch(setSeconds(0));
+
+      console.log(task);
+
+      toast({
+        title: "Timer enregistré !",
+        description: `Le temps de ${formatTime(
+          seconds
+        )} a été ajouté à la tâche "${task.title}".`,
+        className: "bg-green-600 text-white",
+      });
+    }
+  };
+
+  const deleteTimeRecord = (index: number) => {
+    const timeToRemove = storedTimes[index];
+
+    const newStoredTimes: number[] = storedTimes.filter(
+      (_: number, i: number) => i !== index
+    );
+
+    dispatch(setStoredTimes(newStoredTimes));
+
+    if (selectedTask) {
+      const updatedTask = {
+        ...selectedTask,
+        timeSpent: selectedTask.timeSpent || [],
+      };
+
+      setSelectedTask(updatedTask);
+
+      dispatch(
+        removeTimeFromFirestore({
+          taskId: updatedTask.id as string,
+          seconds: timeToRemove,
+        })
+      );
+    }
+  };
+
+  const changeProject = () => {
+    setSelectedTask(null);
+    dispatch(setStoredTimes([]));
+  };
+
+  const handleSelectTask = (taskId: string) => {
+    const task = tasks.find((t: Task) => t.id === taskId);
+    if (task) {
+      console.log(task);
+      setSelectedTask(task);
+      localStorage.setItem("selectedTaskId", task.id);
+      dispatch(setStoredTimes(task.timeSpent || []));
+    }
+  };
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
 
     if (isRunning) {
       interval = setInterval(() => {
-        setSeconds((prev) => prev + 1);
+        dispatch(setSeconds(seconds + 1));
       }, 1000);
     } else if (interval) {
       clearInterval(interval);
@@ -78,58 +166,7 @@ const Timer = () => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isRunning]);
-
-  useEffect(() => {
-    localStorage.setItem("timerSeconds", seconds.toString());
-  }, [seconds]);
-
-  const toggleTimer = () => {
-    if (isRunning) {
-      setIsRunning(false);
-      localStorage.setItem("timerIsRunning", "false");
-    } else {
-      const now = Date.now();
-      localStorage.setItem("timerStartTime", now.toString());
-      setIsRunning(true);
-      localStorage.setItem("timerIsRunning", "true");
-    }
-  };
-
-  const resetTimer = () => {
-    setSeconds(0);
-    setIsRunning(false);
-    localStorage.removeItem("timerStartTime");
-    localStorage.removeItem("timerSeconds");
-    localStorage.removeItem("timerIsRunning");
-  };
-
-  const saveTimer = () => {
-    if (selectedTask) {
-      const task = {
-        ...selectedTask,
-        time: seconds,
-      };
-      setSelectedTask(task);
-      toast({
-        title: "Timer enregistré !",
-        description: `Le timer pour la tâche "${task.title}" a été enregistré avec succès.`,
-        className: "bg-green-600 text-white",
-      });
-    }
-  };
-
-  const changeProject = () => {
-    setSelectedTask(null);
-    localStorage.removeItem("selectedTaskId");
-  };
-
-  const handleSelectTask = (task: Task) => {
-    setSelectedTask(task);
-    if (task.id) {
-      localStorage.setItem("selectedTaskId", task.id); // Sauvegarder l'ID de la tâche sélectionnée
-    }
-  };
+  }, [isRunning, dispatch, seconds]);
 
   return (
     <>
@@ -147,6 +184,26 @@ const Timer = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="rounded-lg p-2">
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {storedTimes.length > 0 ? (
+                    storedTimes.map((time: any, index: any) => (
+                      <DropdownMenuItem
+                        key={index}
+                        className="flex justify-between"
+                      >
+                        {formatTime(time)}
+                        <Button
+                          variant={"outline"}
+                          onClick={() => deleteTimeRecord(index)}
+                          className="text-red-500"
+                        >
+                          ✖
+                        </Button>
+                      </DropdownMenuItem>
+                    ))
+                  ) : (
+                    <DropdownMenuItem>Aucun enregistrement</DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={changeProject}>
                     <ArrowDownUp />
@@ -221,35 +278,29 @@ const Timer = () => {
               <TimerIcon />
               <span className="text-sm">Timer</span>
             </div>
-            <Select
-              onValueChange={(taskId) => {
-                const task = tasks.find((t: Task) => t.id === taskId);
-                if (task) {
-                  setSelectedTask(task);
-                  localStorage.setItem("selectedTaskId", task.id); // Sauvegarder l'ID de la tâche
-                }
-              }}
-            >
-              <SelectTrigger className="w-[220px] bg-white rounded-lg p-2">
-                <SelectValue placeholder="Choisis une tâche" />
-              </SelectTrigger>
-              {tasks.length > 0 && (
-                <SelectContent>
-                  {tasks.map((task: Task) => (
-                    <SelectGroup key={task.id}>
+            {tasks.map((task: Task) => (
+              <Select
+                onValueChange={() => task.id && handleSelectTask(task.id)}
+                key={task.id}
+              >
+                <SelectTrigger className="w-[220px] bg-white rounded-lg p-2">
+                  <SelectValue placeholder="Choisis une tâche" />
+                </SelectTrigger>
+                {tasks.length > 0 && (
+                  <SelectContent>
+                    <SelectGroup>
                       <SelectItem
                         key={task.id}
                         value={task.id as string}
-                        onClick={() => handleSelectTask(task)}
                         className="cursor-pointer"
                       >
                         {task.title}
                       </SelectItem>
                     </SelectGroup>
-                  ))}
-                </SelectContent>
-              )}
-            </Select>
+                  </SelectContent>
+                )}
+              </Select>
+            ))}
           </div>
         </div>
       )}

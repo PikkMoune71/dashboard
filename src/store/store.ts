@@ -3,6 +3,7 @@ import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import projectsReducer from "@/store/slices/projectSlice";
 import tasksReducer from "@/store/slices/taskSlice";
+import timerReducer from "@/store/slices/timerSlice";
 
 const persistConfig = {
   key: "root",
@@ -12,11 +13,13 @@ const persistConfig = {
 
 const projectPersistedReducer = persistReducer(persistConfig, projectsReducer);
 const taskPersistedReducer = persistReducer(persistConfig, tasksReducer);
+const TimerPersistedReducer = persistReducer(persistConfig, timerReducer);
 
 export const store = configureStore({
   reducer: {
     projects: projectPersistedReducer,
     tasks: taskPersistedReducer,
+    timer: TimerPersistedReducer,
   },
 
   middleware: (getDefaultMiddleware) =>

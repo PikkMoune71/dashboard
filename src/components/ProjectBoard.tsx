@@ -543,11 +543,16 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
                                   task.status
                                 )}
                               </span>
-                              {task.timeSpent && (
+                              {task.timeSpent && task.timeSpent.length > 0 && (
                                 <div className="flex items-center">
                                   <Timer width={20} />
                                   <span className="text-xs mt-1">
-                                    {formatTime(task.timeSpent)}
+                                    {formatTime(
+                                      task.timeSpent.reduce(
+                                        (total, time) => total + time,
+                                        0
+                                      )
+                                    )}
                                   </span>
                                 </div>
                               )}

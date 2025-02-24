@@ -1,6 +1,12 @@
 import { db } from "@/app/firebase/config";
 import { updateDoc, doc, getDoc } from "firebase/firestore";
 
+export const fetchTime = async (taskId: string) => {
+  const taskRef = doc(db, "tasks", taskId);
+  const taskDoc = await getDoc(taskRef);
+  return taskDoc.data()?.timeSpent || [];
+};
+
 export const saveTime = async (taskId: string, seconds: number) => {
   const taskRef = doc(db, "tasks", taskId);
 

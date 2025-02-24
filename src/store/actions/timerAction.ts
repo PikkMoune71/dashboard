@@ -1,5 +1,15 @@
-import { removeTime, saveTime } from "@/services/timerService";
+import { fetchTime, removeTime, saveTime } from "@/services/timerService";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+
+// fetchTimeFromFirestore
+export const fetchTimeFromFirestore = createAsyncThunk(
+  "tasks/fetchTimeFromFirestore",
+  async (taskId: string) => {
+    const result = await fetchTime(taskId);
+    console.log("result", result);
+    return result;
+  }
+);
 
 // Sauvegarder le temps passé sur une tâche
 export const saveTimeToFirestore = createAsyncThunk(

@@ -3,4 +3,6 @@ export interface TimerState {
   seconds: number;
   selectedTaskId: string | null;
   storedTimes: number[];
+  status: string;
+  error: string | null;
 }

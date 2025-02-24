@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "./ui/button";
 import {
   ArrowDownUp,
@@ -41,35 +41,43 @@ import {
   setStoredTimes,
 } from "@/store/slices/timerSlice";
 import {
+  fetchTimeFromFirestore,
   removeTimeFromFirestore,
   saveTimeToFirestore,
 } from "@/store/actions/timerAction";
+import { AppDispatch, RootState } from "@/store/store";
 
 const Timer = () => {
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const tasks = useSelector((state: any) => state.tasks.tasks);
-  const dispatch = useDispatch<any>();
+  const dispatch = useDispatch<AppDispatch>();
   const { isRunning, seconds, storedTimes } = useSelector(
-    (state: any) => state.timer
+    (state: RootState) => state.timer
   );
+  const tasks = useSelector((state: RootState) => state.tasks.tasks);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    const savedTaskId = localStorage.getItem("selectedTaskId");
-    if (savedTaskId) {
-      const task = tasks.find((t: Task) => t.id === savedTaskId);
-      if (task) {
-        setSelectedTask(task);
-        dispatch(setStoredTimes(task.timeSpent || []));
-      }
+    if (selectedTask) {
+      dispatch(fetchTimeFromFirestore(selectedTask.id as string));
     }
-  }, [tasks, dispatch]);
+  }, [selectedTask, dispatch]);
+
+  useEffect(() => {
+    if (isRunning) {
+      intervalRef.current = setInterval(() => {
+        dispatch(setSeconds(seconds + 1));
+      }, 1000);
+    } else {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    }
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isRunning, dispatch, seconds]);
 
   const toggleTimer = () => {
-    if (isRunning) {
-      dispatch(setIsRunning(false));
-    } else {
-      dispatch(setIsRunning(true));
-    }
+    dispatch(setIsRunning(!isRunning));
   };
 
   const resetTimer = () => {
@@ -78,95 +86,57 @@ const Timer = () => {
   };
 
   const saveTimer = () => {
-    if (selectedTask) {
-      const newStoredTimes = [...storedTimes, seconds];
-      dispatch(setStoredTimes(newStoredTimes));
+    if (!selectedTask) return;
 
-      const updatedTimeSpent = selectedTask.timeSpent
-        ? [...selectedTask.timeSpent, seconds]
-        : [seconds];
+    const newStoredTimes = [...storedTimes, seconds];
+    dispatch(setStoredTimes(newStoredTimes));
 
-      const task = {
-        ...selectedTask,
-        timeSpent: updatedTimeSpent,
-      };
-      dispatch(
-        saveTimeToFirestore({
-          taskId: task.id as string,
-          seconds,
-        })
-      );
-      setSelectedTask(task);
-      dispatch(setSeconds(0));
+    console.log("new", newStoredTimes);
 
-      console.log(task);
+    dispatch(
+      saveTimeToFirestore({
+        taskId: selectedTask.id as string,
+        seconds,
+      })
+    ).then(() => {
+      const updatedTask = { ...selectedTask, timeSpent: newStoredTimes };
+      setSelectedTask(updatedTask);
+    });
 
-      toast({
-        title: "Timer enregistré !",
-        description: `Le temps de ${formatTime(
-          seconds
-        )} a été ajouté à la tâche "${task.title}".`,
-        className: "bg-green-600 text-white",
-      });
-    }
+    toast({
+      title: "Timer enregistré !",
+      description: `Le temps de ${formatTime(
+        seconds
+      )} a été ajouté à la tâche "${selectedTask.title}".`,
+      className: "bg-green-600 text-white",
+    });
+
+    dispatch(setSeconds(0));
   };
 
   const deleteTimeRecord = (index: number) => {
-    const timeToRemove = storedTimes[index];
-
-    const newStoredTimes: number[] = storedTimes.filter(
-      (_: number, i: number) => i !== index
-    );
-
+    const newStoredTimes = storedTimes.filter((_, i) => i !== index);
     dispatch(setStoredTimes(newStoredTimes));
 
     if (selectedTask) {
-      const updatedTask = {
-        ...selectedTask,
-        timeSpent: selectedTask.timeSpent || [],
-      };
-
-      setSelectedTask(updatedTask);
-
       dispatch(
         removeTimeFromFirestore({
-          taskId: updatedTask.id as string,
-          seconds: timeToRemove,
+          taskId: selectedTask.id as string,
+          seconds: storedTimes[index],
         })
       );
     }
+  };
+
+  const handleSelectTask = (taskId: string) => {
+    const task = tasks.find((t) => t.id === taskId) || null;
+    setSelectedTask(task);
   };
 
   const changeProject = () => {
     setSelectedTask(null);
     dispatch(setStoredTimes([]));
   };
-
-  const handleSelectTask = (taskId: string) => {
-    const task = tasks.find((t: Task) => t.id === taskId);
-    if (task) {
-      console.log(task);
-      setSelectedTask(task);
-      localStorage.setItem("selectedTaskId", task.id);
-      dispatch(setStoredTimes(task.timeSpent || []));
-    }
-  };
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-
-    if (isRunning) {
-      interval = setInterval(() => {
-        dispatch(setSeconds(seconds + 1));
-      }, 1000);
-    } else if (interval) {
-      clearInterval(interval);
-    }
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isRunning, dispatch, seconds]);
 
   return (
     <>
@@ -278,29 +248,24 @@ const Timer = () => {
               <TimerIcon />
               <span className="text-sm">Timer</span>
             </div>
-            {tasks.map((task: Task) => (
-              <Select
-                onValueChange={() => task.id && handleSelectTask(task.id)}
-                key={task.id}
-              >
-                <SelectTrigger className="w-[220px] bg-white rounded-lg p-2">
-                  <SelectValue placeholder="Choisis une tâche" />
-                </SelectTrigger>
-                {tasks.length > 0 && (
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem
-                        key={task.id}
-                        value={task.id as string}
-                        className="cursor-pointer"
-                      >
-                        {task.title}
-                      </SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                )}
-              </Select>
-            ))}
+            <Select onValueChange={handleSelectTask}>
+              <SelectTrigger className="w-[220px] bg-white rounded-lg p-2">
+                <SelectValue placeholder="Choisis une tâche" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {tasks.map((task: Task) => (
+                    <SelectItem
+                      key={task.id}
+                      value={task.id as string}
+                      className="cursor-pointer"
+                    >
+                      {task.title}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       )}

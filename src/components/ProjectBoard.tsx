@@ -69,6 +69,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
   const tasks = useSelector((state: any) =>
     state.tasks.tasks.filter((task: Task) => task.projectId === project.id)
   );
+  const timeSpent = useSelector((state: any) => state.timer.storedTimes);
   const [newTaskTitle, setNewTaskTitle] = useState<string>("");
   const [newTaskDescription, setNewTaskDescription] = useState<string>("");
   const [newTaskStatus, setNewTaskStatus] = useState<Task["status"]>("todo");
@@ -545,13 +546,14 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
                                   task.status
                                 )}
                               </span>
-                              {task.timeSpent && task.timeSpent.length > 0 && (
+                              {timeSpent && timeSpent.length > 0 && (
                                 <div className="flex items-center">
                                   <Timer width={20} />
                                   <span className="text-xs mt-1">
                                     {formatTime(
-                                      task.timeSpent.reduce(
-                                        (total, time) => total + time,
+                                      timeSpent.reduce(
+                                        (total: number, time: number) =>
+                                          total + time,
                                         0
                                       )
                                     )}

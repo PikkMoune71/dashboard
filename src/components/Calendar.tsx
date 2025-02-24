@@ -10,6 +10,7 @@ import { useRef, useEffect, useState } from "react";
 import { Project } from "@/types/Project";
 import { Event } from "@/types/Event";
 import { formatDateToFrench } from "@/composables/useFormatDate";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Calendar = () => {
   const calendarRef = useRef<FullCalendar | null>(null);
@@ -18,6 +19,7 @@ const Calendar = () => {
   ) as Project[];
 
   const [events, setEvents] = useState<Event[]>([]);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const updatedEvents: Event[] = projects.flatMap(
@@ -48,19 +50,19 @@ const Calendar = () => {
   }, [projects]);
 
   return (
-    <div className="calendar-container p-4 ">
+    <div className="calendar-container p-4">
       <FullCalendar
         locale={"fr"}
         key={JSON.stringify(events)}
         ref={calendarRef}
         plugins={[dayGridPlugin, interactionPlugin]}
-        initialView="dayGridWeek"
+        initialView={isMobile ? "dayGridDay" : "dayGridWeek"}
         events={events}
         eventContent={renderEventContent}
         headerToolbar={{
           left: "prev,next today",
           center: "title",
-          right: "dayGridMonth,dayGridWeek,dayGridDay",
+          right: isMobile ? "" : "dayGridMonth,dayGridWeek,dayGridDay",
         }}
         buttonText={{
           today: "Aujourd'hui",
@@ -69,6 +71,7 @@ const Calendar = () => {
           day: "Jour",
         }}
         height="auto"
+        contentHeight="auto" // Ajuste automatiquement la hauteur
       />
     </div>
   );

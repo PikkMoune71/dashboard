@@ -110,3 +110,7 @@ body {
 .fc .fc-button-primary:not(:disabled):hover {
   background-color: #1e40af !important;
 }
+
+.fc-header-toolbar.fc-toolbar.fc-toolbar-ltr {
+  flex-wrap: wrap;
+}

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import {
   ArrowDownUp,
@@ -24,7 +23,6 @@ import {
   SelectValue,
 } from "./ui/select";
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "@/hooks/use-toast";
 import { formatTime } from "@/composables/useFormatDate";
 import {
   DropdownMenu,
@@ -35,33 +33,26 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
-import {
-  setIsRunning,
-  setSeconds,
-  setStoredTimes,
-} from "@/store/slices/timerSlice";
-import {
-  fetchTimeFromFirestore,
-  removeTimeFromFirestore,
-  saveTimeToFirestore,
-} from "@/store/actions/timerAction";
+import { setSeconds, setStoredTimes } from "@/store/slices/timerSlice";
+
 import { AppDispatch, RootState } from "@/store/store";
+import useTimer from "@/hooks/use-timer";
 
 const Timer = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { isRunning, seconds, storedTimes } = useSelector(
-    (state: RootState) => state.timer
-  );
-  const tasks = useSelector((state: RootState) => state.tasks.tasks);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    if (selectedTask) {
-      dispatch(fetchTimeFromFirestore(selectedTask.id as string));
-      localStorage.setItem("selectedTask", JSON.stringify(selectedTask));
-    }
-  }, [selectedTask, dispatch]);
+  const tasks = useSelector((state: RootState) => state.tasks.tasks);
+
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const {
+    isRunning,
+    seconds,
+    storedTimes,
+    toggleTimer,
+    resetTimer,
+    saveTimer,
+    deleteTimeRecord,
+  } = useTimer(selectedTask);
 
   useEffect(() => {
     const savedTask = localStorage.getItem("selectedTask");
@@ -73,76 +64,6 @@ const Timer = () => {
       dispatch(setSeconds(Number(savedTime)));
     }
   }, [dispatch]);
-
-  useEffect(() => {
-    if (isRunning) {
-      intervalRef.current = setInterval(() => {
-        dispatch(setSeconds(seconds + 1));
-      }, 1000);
-      localStorage.setItem("timerTime", String(seconds));
-    } else {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    }
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [isRunning, dispatch, seconds]);
-
-  const toggleTimer = () => {
-    dispatch(setIsRunning(!isRunning));
-  };
-
-  const resetTimer = () => {
-    dispatch(setIsRunning(false));
-    dispatch(setSeconds(0));
-
-    localStorage.removeItem("selectedTask");
-    localStorage.removeItem("timerTime");
-  };
-
-  const saveTimer = () => {
-    if (!selectedTask) return;
-
-    const newStoredTimes = [...storedTimes, seconds];
-    dispatch(setStoredTimes(newStoredTimes));
-
-    dispatch(
-      saveTimeToFirestore({
-        taskId: selectedTask.id as string,
-        seconds,
-      })
-    ).then(() => {
-      const updatedTask = { ...selectedTask, timeSpent: newStoredTimes };
-      setSelectedTask(updatedTask);
-    });
-
-    toast({
-      title: "Timer enregistré !",
-      description: `Le temps de ${formatTime(
-        seconds
-      )} a été ajouté à la tâche "${selectedTask.title}".`,
-      className: "bg-green-600 text-white",
-    });
-
-    dispatch(setSeconds(0));
-    localStorage.setItem("selectedTask", JSON.stringify(selectedTask));
-    localStorage.setItem("timerTime", String(0));
-  };
-
-  const deleteTimeRecord = (index: number) => {
-    const newStoredTimes = storedTimes.filter((_, i) => i !== index);
-    dispatch(setStoredTimes(newStoredTimes));
-
-    if (selectedTask) {
-      dispatch(
-        removeTimeFromFirestore({
-          taskId: selectedTask.id as string,
-          seconds: storedTimes[index],
-        })
-      );
-    }
-  };
 
   const handleSelectTask = (taskId: string) => {
     const task = tasks.find((t) => t.id === taskId) || null;
@@ -196,6 +117,12 @@ const Timer = () => {
                   ) : (
                     <DropdownMenuItem>Aucun enregistrement</DropdownMenuItem>
                   )}
+                  <span className="text-xs font-bold mt-3">
+                    Total :{" "}
+                    {formatTime(
+                      storedTimes.reduce((acc, time) => acc + time, 0)
+                    )}{" "}
+                  </span>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={changeProject}>
                     <ArrowDownUp />

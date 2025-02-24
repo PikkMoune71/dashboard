@@ -55,7 +55,7 @@ export const getProjects = async (): Promise<Project[]> => {
             taskDoc.data().endDate instanceof Timestamp
               ? taskDoc.data().endDate.toDate().toISOString()
               : taskDoc.data().endDate,
-          timeSpent: taskDoc.data().timeSpent,
+          timeSpent: taskDoc.data().timeSpent || [],
         }));
 
         return {

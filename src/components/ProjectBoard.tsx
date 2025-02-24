@@ -163,6 +163,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
       createdAt: new Date().toISOString(),
       startDate: newTaskStartDate,
       endDate: newTaskEndDate,
+      timeSpent: [],
     };
 
     await dispatch(
@@ -210,6 +211,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
       status: editTaskStatus,
       startDate: editTaskStartDate,
       endDate: editTaskEndDate,
+      time: [],
     };
 
     dispatch(updateTaskAction({ projectId: project.id ?? "", updatedTask }));

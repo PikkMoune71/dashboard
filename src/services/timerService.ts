@@ -25,18 +25,18 @@ export const saveTime = async (taskId: string, seconds: number) => {
 
 export const removeTime = async (taskId: string, seconds: number) => {
   const taskRef = doc(db, "tasks", taskId);
-
   const taskDoc = await getDoc(taskRef);
+
   if (taskDoc.exists()) {
     const currentTimeSpent: number[] = taskDoc.data()?.timeSpent || [];
 
-    // On filtre la liste des times en excluant la valeur 'seconds'
-    const updatedTimeSpent = currentTimeSpent.filter(
-      (time) => time !== seconds
-    );
+    const index = currentTimeSpent.indexOf(seconds);
+    if (index !== -1) {
+      currentTimeSpent.splice(index, 1);
+    }
 
     await updateDoc(taskRef, {
-      timeSpent: updatedTimeSpent,
+      timeSpent: currentTimeSpent,
     });
   }
 

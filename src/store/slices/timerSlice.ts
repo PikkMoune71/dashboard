@@ -38,23 +38,19 @@ const timerSlice = createSlice({
       state.storedTimes = [];
     },
     setStoredTimes(state, action: PayloadAction<number[]>) {
-      console.log(action.payload);
       state.storedTimes = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Lors du succès de fetchTimeFromFirestore
       .addCase(fetchTimeFromFirestore.fulfilled, (state, action) => {
-        state.storedTimes = action.payload; // On met à jour le state avec les données de Firestore
-        state.status = "succeeded"; // On indique que la requête est terminée
+        state.storedTimes = action.payload;
+        state.status = "succeeded";
       })
-      // Lors de l'échec de fetchTimeFromFirestore
       .addCase(fetchTimeFromFirestore.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message ?? null;
       })
-      // Lors du statut en attente de fetchTimeFromFirestore
       .addCase(fetchTimeFromFirestore.pending, (state) => {
         state.status = "loading";
       });

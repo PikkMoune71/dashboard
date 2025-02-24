@@ -107,8 +107,6 @@ const Timer = () => {
     const newStoredTimes = [...storedTimes, seconds];
     dispatch(setStoredTimes(newStoredTimes));
 
-    console.log("new", newStoredTimes);
-
     dispatch(
       saveTimeToFirestore({
         taskId: selectedTask.id as string,
@@ -135,6 +133,8 @@ const Timer = () => {
   const deleteTimeRecord = (index: number) => {
     const newStoredTimes = storedTimes.filter((_, i) => i !== index);
     dispatch(setStoredTimes(newStoredTimes));
+
+    console.log(storedTimes[index]);
 
     if (selectedTask) {
       dispatch(

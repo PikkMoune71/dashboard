@@ -6,7 +6,6 @@ export const fetchTimeFromFirestore = createAsyncThunk(
   "tasks/fetchTimeFromFirestore",
   async (taskId: string) => {
     const result = await fetchTime(taskId);
-    console.log("result", result);
     return result;
   }
 );

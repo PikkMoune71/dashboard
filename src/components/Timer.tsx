@@ -59,14 +59,27 @@ const Timer = () => {
   useEffect(() => {
     if (selectedTask) {
       dispatch(fetchTimeFromFirestore(selectedTask.id as string));
+      localStorage.setItem("selectedTask", JSON.stringify(selectedTask));
     }
   }, [selectedTask, dispatch]);
+
+  useEffect(() => {
+    const savedTask = localStorage.getItem("selectedTask");
+    const savedTime = localStorage.getItem("timerTime");
+
+    if (savedTask && savedTime) {
+      const task = JSON.parse(savedTask);
+      setSelectedTask(task);
+      dispatch(setSeconds(Number(savedTime)));
+    }
+  }, [dispatch]);
 
   useEffect(() => {
     if (isRunning) {
       intervalRef.current = setInterval(() => {
         dispatch(setSeconds(seconds + 1));
       }, 1000);
+      localStorage.setItem("timerTime", String(seconds));
     } else {
       if (intervalRef.current) clearInterval(intervalRef.current);
     }
@@ -83,6 +96,9 @@ const Timer = () => {
   const resetTimer = () => {
     dispatch(setIsRunning(false));
     dispatch(setSeconds(0));
+
+    localStorage.removeItem("selectedTask");
+    localStorage.removeItem("timerTime");
   };
 
   const saveTimer = () => {
@@ -112,6 +128,8 @@ const Timer = () => {
     });
 
     dispatch(setSeconds(0));
+    localStorage.setItem("selectedTask", JSON.stringify(selectedTask));
+    localStorage.setItem("timerTime", String(0));
   };
 
   const deleteTimeRecord = (index: number) => {
@@ -131,11 +149,17 @@ const Timer = () => {
   const handleSelectTask = (taskId: string) => {
     const task = tasks.find((t) => t.id === taskId) || null;
     setSelectedTask(task);
+
+    localStorage.setItem("selectedTask", JSON.stringify(task));
+    localStorage.setItem("timerTime", String(0));
   };
 
   const changeProject = () => {
     setSelectedTask(null);
     dispatch(setStoredTimes([]));
+
+    localStorage.removeItem("selectedTask");
+    localStorage.removeItem("timerTime");
   };
 
   return (

@@ -134,8 +134,6 @@ const Timer = () => {
     const newStoredTimes = storedTimes.filter((_, i) => i !== index);
     dispatch(setStoredTimes(newStoredTimes));
 
-    console.log(storedTimes[index]);
-
     if (selectedTask) {
       dispatch(
         removeTimeFromFirestore({

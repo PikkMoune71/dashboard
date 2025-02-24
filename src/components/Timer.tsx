@@ -37,6 +37,7 @@ import { setSeconds, setStoredTimes } from "@/store/slices/timerSlice";
 
 import { AppDispatch, RootState } from "@/store/store";
 import useTimer from "@/hooks/use-timer";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Timer = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -53,6 +54,8 @@ const Timer = () => {
     saveTimer,
     deleteTimeRecord,
   } = useTimer(selectedTask);
+
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const savedTask = localStorage.getItem("selectedTask");
@@ -158,7 +161,11 @@ const Timer = () => {
             </div>
             <span className="text-xs">{selectedTask.title}</span>
           </div>
-          <div className="flex items-center gap-2 p-2 bg-amber-300 rounded-lg group-data-[state=expanded]:hidden">
+          <div
+            className={`${
+              isMobile && "hidden"
+            } flex items-center gap-2 p-2 bg-amber-300 rounded-lg group-data-[state=expanded]:hidden`}
+          >
             <Popover>
               <PopoverTrigger asChild>
                 <TimerIcon />

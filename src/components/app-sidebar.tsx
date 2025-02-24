@@ -19,6 +19,7 @@ import { fetchProjects } from "@/store/actions/projectsAction";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import Timer from "./Timer";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function AppSidebar({
   onProjectClick,
@@ -32,6 +33,7 @@ export function AppSidebar({
   const { user, loading } = useUser();
   const [projects, setProjects] = useState<Project[]>([]);
   const dispatch = useDispatch<AppDispatch>();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const loadProjects = async () => {
@@ -48,7 +50,11 @@ export function AppSidebar({
         <div className="px-10 pt-3 group-data-[collapsible=icon]:hidden">
           <Logo />
         </div>
-        <div className="flex justify-center group-data-[state=expanded]:hidden">
+        <div
+          className={`${
+            isMobile && "hidden"
+          } "flex justify-center group-data-[state=expanded]:hidden`}
+        >
           <Logo isIcon />
         </div>
         <Separator />

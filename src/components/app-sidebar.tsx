@@ -18,6 +18,7 @@ import { useDispatch } from "react-redux";
 import { fetchProjects } from "@/store/actions/projectsAction";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
+import Timer from "./Timer";
 
 export function AppSidebar({
   onProjectClick,
@@ -75,6 +76,7 @@ export function AppSidebar({
         <NavProjects projects={projects} onProjectClick={onProjectClick} />
       </SidebarContent>
       <SidebarFooter>
+        <Timer />
         <NavUser user={user} onShowAccount={onAccountClick} />
       </SidebarFooter>
       <SidebarRail />

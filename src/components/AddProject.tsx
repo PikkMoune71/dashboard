@@ -62,7 +62,6 @@ export const AddProject: React.FC<AddProjectProps> = ({ onAddProject }) => {
       });
 
       dispatch(fetchProjects());
-      console.log("color", color);
       onAddProject(title, slug, color);
       setTitle("");
       setSlug("");

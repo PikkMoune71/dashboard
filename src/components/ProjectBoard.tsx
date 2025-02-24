@@ -43,7 +43,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Timer, Trash2 } from "lucide-react";
 import { truncateText } from "@/composables/useTruncatedText";
 import { Label } from "./ui/label";
 import ColorPicker from "./ColorPicker";
@@ -51,6 +51,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import {
   formatDateToFrench,
   formatDateToISO,
+  formatTime,
 } from "@/composables/useFormatDate";
 
 const statusColors = {
@@ -68,6 +69,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
   const tasks = useSelector((state: any) =>
     state.tasks.tasks.filter((task: Task) => task.projectId === project.id)
   );
+  const timeSpent = useSelector((state: any) => state.timer.storedTimes);
   const [newTaskTitle, setNewTaskTitle] = useState<string>("");
   const [newTaskDescription, setNewTaskDescription] = useState<string>("");
   const [newTaskStatus, setNewTaskStatus] = useState<Task["status"]>("todo");
@@ -162,6 +164,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
       createdAt: new Date().toISOString(),
       startDate: newTaskStartDate,
       endDate: newTaskEndDate,
+      timeSpent: [],
     };
 
     await dispatch(
@@ -209,6 +212,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
       status: editTaskStatus,
       startDate: editTaskStartDate,
       endDate: editTaskEndDate,
+      time: [],
     };
 
     dispatch(updateTaskAction({ projectId: project.id ?? "", updatedTask }));
@@ -533,14 +537,30 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
                             </div>
                             <p className="text-sm">{task.description}</p>
 
-                            <span className="text-xs">
-                              📅{" "}
-                              {formatTaskDates(
-                                task.startDate,
-                                task.endDate,
-                                task.status
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="text-xs">
+                                📅{" "}
+                                {formatTaskDates(
+                                  task.startDate,
+                                  task.endDate,
+                                  task.status
+                                )}
+                              </span>
+                              {timeSpent && timeSpent.length > 0 && (
+                                <div className="flex items-center">
+                                  <Timer width={20} />
+                                  <span className="text-xs mt-1">
+                                    {formatTime(
+                                      timeSpent.reduce(
+                                        (total: number, time: number) =>
+                                          total + time,
+                                        0
+                                      )
+                                    )}
+                                  </span>
+                                </div>
                               )}
-                            </span>
+                            </div>
                           </Card>
                         )}
                       </Draggable>

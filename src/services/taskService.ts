@@ -43,6 +43,7 @@ export const getTasks = async (projectId: string): Promise<Task[]> => {
             : taskData.createdAt,
         startDate: taskData.startDate,
         endDate: taskData.endDate,
+        timeSpent: taskData.timeSpent || [],
       });
     });
 
@@ -103,6 +104,7 @@ export const updateTask = async (
       projectId: updatedTask.projectId,
       startDate: updatedTask.startDate,
       endDate: updatedTask.endDate,
+      timeSpent: updatedTask.timeSpent || [],
     });
 
     // Mettre à jour la tâche dans le projet concerné

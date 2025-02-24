@@ -33,6 +33,7 @@ const useTimer = (selectedTask: Task | null) => {
       intervalRef.current = setInterval(() => {
         dispatch(setSeconds(seconds + 1));
       }, 1000);
+      localStorage.setItem("timerTime", String(seconds));
     } else {
       if (intervalRef.current) clearInterval(intervalRef.current);
     }

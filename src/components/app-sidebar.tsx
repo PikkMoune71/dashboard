@@ -6,7 +6,12 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { useUser } from "@/composables/useFetchUser";
@@ -25,10 +30,12 @@ export function AppSidebar({
   onProjectClick,
   onAccountClick,
   onCalendarClick,
+  onHomeClick,
 }: {
   onProjectClick: (project: Project) => void;
   onAccountClick: () => void;
   onCalendarClick: () => void;
+  onHomeClick: () => void;
 }) {
   const { user, loading } = useUser();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -79,6 +86,20 @@ export function AppSidebar({
             </Button>
           </div>
         </div>
+        <Separator />
+        <SidebarGroup>
+          <SidebarGroupLabel>Tableau de bord</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <a href="#" onClick={onHomeClick}>
+                  <span>🏠</span>
+                  <span>Accueil</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
         <NavProjects projects={projects} onProjectClick={onProjectClick} />
       </SidebarContent>
       <SidebarFooter>

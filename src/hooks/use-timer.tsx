@@ -37,8 +37,23 @@ const useTimer = (selectedTask: Task | null) => {
     } else {
       if (intervalRef.current) clearInterval(intervalRef.current);
     }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && isRunning) {
+        // Quand l'onglet devient visible, récupérer et restaurer la valeur du timer
+        const savedTime = localStorage.getItem("timerTime");
+        if (savedTime) {
+          dispatch(setSeconds(Number(savedTime)));
+        }
+      }
+    };
+
+    // Ajouter l'événement visibilitychange
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [isRunning, dispatch, seconds]);
 

@@ -16,14 +16,13 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Project } from "@/types/Project";
-import { AddProject } from "@/components/AddProject";
 import { ProjectBoard } from "@/components/ProjectBoard";
 import { Account } from "@/components/Account";
 import Calendar from "@/components/Calendar";
+import { Board } from "@/components/Board";
 
 export default function Page() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
   const [showAccount, setShowAccount] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
 
@@ -36,11 +35,18 @@ export default function Page() {
   const handleShowAccount = () => {
     setShowAccount(true);
     setShowCalendar(false);
+    setSelectedProject(null);
   };
 
   const handleShowCalendar = () => {
     setShowCalendar(true);
     setShowAccount(false);
+    setSelectedProject(null);
+  };
+
+  const handleShowHome = () => {
+    setShowAccount(false);
+    setShowCalendar(false);
     setSelectedProject(null);
   };
 
@@ -50,6 +56,7 @@ export default function Page() {
         onProjectClick={handleProjectClick}
         onAccountClick={handleShowAccount}
         onCalendarClick={handleShowCalendar}
+        onHomeClick={handleShowHome}
       />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2">
@@ -64,10 +71,12 @@ export default function Page() {
                       ? "Mon compte"
                       : showCalendar
                       ? "Calendrier"
-                      : "Liste des projets"}
+                      : selectedProject
+                      ? selectedProject.title
+                      : "Page d'accueil"}{" "}
                   </BreadcrumbLink>
                 </BreadcrumbItem>
-                {!showAccount && !showCalendar && (
+                {!showAccount && !showCalendar && selectedProject && (
                   <>
                     <BreadcrumbSeparator className="hidden md:block" />
                     <BreadcrumbItem>
@@ -82,37 +91,18 @@ export default function Page() {
           </div>
         </header>
 
-        {!showAccount && !showCalendar ? (
-          <>
-            {!selectedProject && (
-              <div className="flex flex-col items-center justify-center p-8 rounded-lg h-full bg-muted/50">
-                <h2 className="text-2xl font-semibold text-muted-foreground mb-4">
-                  Aucun projet sélectionné
-                </h2>
-                <p className="text-lg text-muted-foreground mb-6">
-                  Sélectionnez un projet ou ajoutez-en un nouveau pour commencer
-                  à travailler.
-                </p>
-                <div className="flex items-center gap-4">
-                  <AddProject
-                    onAddProject={(title: string, slug: string) =>
-                      setProjects([...projects, { title, slug }])
-                    }
-                  />
-                </div>
-              </div>
-            )}
-
-            <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-              {selectedProject && <ProjectBoard project={selectedProject} />}
-            </div>
-          </>
+        {!showAccount && !showCalendar && !selectedProject ? (
+          <Board />
         ) : showCalendar ? (
           <div className="p-4">
             <Calendar />
           </div>
-        ) : (
+        ) : showAccount ? (
           <Account />
+        ) : (
+          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+            {selectedProject && <ProjectBoard project={selectedProject} />}
+          </div>
         )}
       </SidebarInset>
     </SidebarProvider>

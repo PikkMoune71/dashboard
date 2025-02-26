@@ -9,75 +9,80 @@ import {
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Project } from "@/types/Project";
 import { generateSlug } from "@/composables/useGenerateSlug";
 import { Task } from "@/types/Task";
 
-export const getProjects = async (): Promise<Project[]> => {
-  const auth = getAuth();
-  const user = auth.currentUser;
+export const getProjects = (): Promise<Project[]> => {
+  return new Promise((resolve, reject) => {
+    const auth = getAuth();
 
-  if (!user) {
-    throw new Error("Utilisateur non connecté");
-  }
+    // Observer l'état d'authentification de l'utilisateur
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        reject(new Error("Utilisateur non connecté"));
+        return;
+      }
 
-  try {
-    const projectsRef = collection(db, "projects");
-    const q = query(projectsRef, where("userId", "==", user.uid));
-    const querySnapshot = await getDocs(q);
+      try {
+        const projectsRef = collection(db, "projects");
+        const q = query(projectsRef, where("userId", "==", user.uid));
+        const querySnapshot = await getDocs(q);
 
-    const projects: Project[] = await Promise.all(
-      querySnapshot.docs.map(async (docSnapshot) => {
-        const projectData = docSnapshot.data();
-        const tasksRef = collection(db, "tasks");
-        const tasksQuery = query(
-          tasksRef,
-          where("projectId", "==", docSnapshot.id)
+        const projects: Project[] = await Promise.all(
+          querySnapshot.docs.map(async (docSnapshot) => {
+            const projectData = docSnapshot.data();
+            const tasksRef = collection(db, "tasks");
+            const tasksQuery = query(
+              tasksRef,
+              where("projectId", "==", docSnapshot.id)
+            );
+            const tasksSnapshot = await getDocs(tasksQuery);
+
+            const tasks: Task[] = tasksSnapshot.docs.map((taskDoc) => ({
+              id: taskDoc.id,
+              title: taskDoc.data().title,
+              description: taskDoc.data().description,
+              status: taskDoc.data().status,
+              projectId: taskDoc.data().projectId,
+              createdAt:
+                taskDoc.data().createdAt instanceof Timestamp
+                  ? taskDoc.data().createdAt.toDate().toISOString()
+                  : taskDoc.data().createdAt,
+              startDate:
+                taskDoc.data().startDate instanceof Timestamp
+                  ? taskDoc.data().startDate.toDate().toISOString()
+                  : taskDoc.data().startDate,
+              endDate:
+                taskDoc.data().endDate instanceof Timestamp
+                  ? taskDoc.data().endDate.toDate().toISOString()
+                  : taskDoc.data().endDate,
+              timeSpent: taskDoc.data().timeSpent || [],
+            }));
+
+            return {
+              id: docSnapshot.id,
+              title: projectData.title,
+              slug: projectData.slug,
+              color: projectData.color,
+              createdAt:
+                projectData.createdAt instanceof Timestamp
+                  ? projectData.createdAt.toDate().toISOString()
+                  : projectData.createdAt,
+              userId: projectData.userId,
+              tasks,
+            };
+          })
         );
-        const tasksSnapshot = await getDocs(tasksQuery);
 
-        const tasks: Task[] = tasksSnapshot.docs.map((taskDoc) => ({
-          id: taskDoc.id,
-          title: taskDoc.data().title,
-          description: taskDoc.data().description,
-          status: taskDoc.data().status,
-          projectId: taskDoc.data().projectId,
-          createdAt:
-            taskDoc.data().createdAt instanceof Timestamp
-              ? taskDoc.data().createdAt.toDate().toISOString()
-              : taskDoc.data().createdAt,
-          startDate:
-            taskDoc.data().startDate instanceof Timestamp
-              ? taskDoc.data().startDate.toDate().toISOString()
-              : taskDoc.data().startDate,
-          endDate:
-            taskDoc.data().endDate instanceof Timestamp
-              ? taskDoc.data().endDate.toDate().toISOString()
-              : taskDoc.data().endDate,
-          timeSpent: taskDoc.data().timeSpent || [],
-        }));
-
-        return {
-          id: docSnapshot.id,
-          title: projectData.title,
-          slug: projectData.slug,
-          color: projectData.color,
-          createdAt:
-            projectData.createdAt instanceof Timestamp
-              ? projectData.createdAt.toDate().toISOString()
-              : projectData.createdAt,
-          userId: projectData.userId,
-          tasks,
-        };
-      })
-    );
-
-    return projects;
-  } catch (error) {
-    console.error("Erreur lors de la récupération des projets : ", error);
-    throw new Error("Erreur lors de la récupération des projets.");
-  }
+        resolve(projects);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des projets : ", error);
+        reject(new Error("Erreur lors de la récupération des projets."));
+      }
+    });
+  });
 };
 
 export const updateProject = async (

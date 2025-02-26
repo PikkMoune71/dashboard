@@ -33,7 +33,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Separator } from "./ui/separator";
 
 export function NavProjects({
   onProjectClick,
@@ -91,7 +90,6 @@ export function NavProjects({
 
   return (
     <SidebarGroup>
-      <Separator />
       <SidebarGroupLabel>Liste des projets</SidebarGroupLabel>
       {projects.length === 0 && (
         <SidebarGroupLabel className="text-muted-foreground">

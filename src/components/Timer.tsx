@@ -39,7 +39,11 @@ import { AppDispatch, RootState } from "@/store/store";
 import useTimer from "@/hooks/use-timer";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const Timer = () => {
+interface TimerProps {
+  isWidget?: boolean;
+}
+
+const Timer: React.FC<TimerProps> = ({ isWidget }) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const tasks = useSelector((state: RootState) => state.tasks.tasks);
@@ -161,41 +165,43 @@ const Timer = () => {
             </div>
             <span className="text-xs">{selectedTask.title}</span>
           </div>
-          <div
-            className={`${
-              isMobile && "hidden"
-            } flex items-center gap-2 p-2 bg-amber-300 rounded-lg group-data-[state=expanded]:hidden`}
-          >
-            <Popover>
-              <PopoverTrigger asChild>
-                <TimerIcon />
-              </PopoverTrigger>
-              <PopoverContent className="bg-primary text-white rounded-xl p-2 ml-12">
-                <div className="flex items-center justify-between gap-2 mb-2 ">
-                  <div className="flex items-center gap-2">
-                    <TimerIcon />
-                    <span className="text-sm">Timer</span>
+          {!isWidget && (
+            <div
+              className={`${
+                isMobile && "hidden"
+              } flex items-center gap-2 p-2 bg-amber-300 rounded-lg group-data-[state=expanded]:hidden`}
+            >
+              <Popover>
+                <PopoverTrigger asChild>
+                  <TimerIcon />
+                </PopoverTrigger>
+                <PopoverContent className="bg-primary text-white rounded-xl p-2 ml-12">
+                  <div className="flex items-center justify-between gap-2 mb-2 ">
+                    <div className="flex items-center gap-2">
+                      <TimerIcon />
+                      <span className="text-sm">Timer</span>
+                    </div>
                   </div>
-                </div>
-                <div className="grid grid-cols-2 items-center">
-                  <div>
-                    <h1 className="text-2xl font-bold">
-                      {formatTime(seconds)}
-                    </h1>
+                  <div className="grid grid-cols-2 items-center">
+                    <div>
+                      <h1 className="text-2xl font-bold">
+                        {formatTime(seconds)}
+                      </h1>
+                    </div>
+                    <div className="flex items-end justify-end gap-2">
+                      <Button
+                        onClick={toggleTimer}
+                        className="bg-amber-300 text-black hover:bg-amber-400 rounded-full"
+                      >
+                        {isRunning ? <Pause /> : <Play />}
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-end justify-end gap-2">
-                    <Button
-                      onClick={toggleTimer}
-                      className="bg-amber-300 text-black hover:bg-amber-400 rounded-full"
-                    >
-                      {isRunning ? <Pause /> : <Play />}
-                    </Button>
-                  </div>
-                </div>
-                <span className="text-xs">{selectedTask.title}</span>
-              </PopoverContent>
-            </Popover>
-          </div>
+                  <span className="text-xs">{selectedTask.title}</span>
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
         </>
       ) : (
         <div className="grid grid-cols-2 p-2 bg-amber-300 rounded-lg group-data-[collapsible=icon]:hidden">

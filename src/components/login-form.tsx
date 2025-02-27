@@ -19,6 +19,7 @@ import {
 import { auth } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 
 export function LoginForm({
   className,
@@ -26,6 +27,7 @@ export function LoginForm({
 }: React.ComponentPropsWithoutRef<"div">) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [signInWithEmailAndPassword, , loading, error] =
     useSignInWithEmailAndPassword(auth);
   const [signInWithGoogle] = useSignInWithGoogle(auth);
@@ -93,16 +95,21 @@ export function LoginForm({
                   required
                 />
               </div>
-              <div>
-                <Label htmlFor="password">Mot de passe</Label>
+              <div className="relative">
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="********"
                   required
                 />
+                <span
+                  className="absolute right-3 top-5 transform -translate-y-1/2 cursor-pointer"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  {showPassword ? <EyeOff width={15} /> : <Eye width={15} />}{" "}
+                </span>
               </div>
               {error && <p className="text-red-500 text-sm">{error.message}</p>}
               <Button type="submit" className="w-full" disabled={loading}>

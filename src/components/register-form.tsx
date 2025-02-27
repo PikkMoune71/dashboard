@@ -21,6 +21,7 @@ import { db } from "@/app/firebase/config";
 import { doc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 
 export function RegisterForm({
   className,
@@ -31,6 +32,7 @@ export function RegisterForm({
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const [createUserWithEmailAndPassword] =
@@ -161,16 +163,21 @@ export function RegisterForm({
                   required
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Mot de passe</Label>
+              <div className="relative">
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="********"
                   required
                 />
+                <span
+                  className="absolute right-3 top-7 transform -translate-y-1/2 cursor-pointer"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  {showPassword ? <EyeOff width={15} /> : <Eye width={15} />}{" "}
+                </span>
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Inscription..." : "Inscription"}

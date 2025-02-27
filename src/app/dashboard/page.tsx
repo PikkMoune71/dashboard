@@ -20,6 +20,7 @@ import { ProjectBoard } from "@/components/ProjectBoard";
 import { Account } from "@/components/Account";
 import Calendar from "@/components/Calendar";
 import { Board } from "@/components/Board";
+import CalendarDownload from "@/components/CalendarDownload";
 
 export default function Page() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -95,6 +96,7 @@ export default function Page() {
           <Board />
         ) : showCalendar ? (
           <div className="p-4">
+            <CalendarDownload />
             <Calendar />
           </div>
         ) : showAccount ? (

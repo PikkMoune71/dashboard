@@ -1,4 +1,6 @@
 import { useUser } from "@/composables/useFetchUser";
+import { Button } from "./ui/button";
+import { Download } from "lucide-react";
 
 export default function CalendarDownload() {
   const { user } = useUser();
@@ -8,11 +10,11 @@ export default function CalendarDownload() {
   const downloadUrl = `/api/calendar/${user.calendarToken}`;
 
   return (
-    <button
+    <Button
       onClick={() => (window.location.href = downloadUrl)}
-      className="btn"
+      variant="outline"
     >
-      Télécharger mon calendrier
-    </button>
+      <Download /> Télécharger mon calendrier (.ics)
+    </Button>
   );
 }

@@ -38,7 +38,7 @@ import { Label } from "./ui/label";
 import ColorPicker from "./ColorPicker";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { formatDateToISO } from "@/composables/useFormatDate";
-import { TaskItem } from "./Task";
+import { TaskItem } from "./TaskItem";
 
 const statusColors = {
   todo: "bg-indigo-200 text-indigo-700",

@@ -23,8 +23,8 @@ interface TaskProps {
   provided: DraggableProvided;
   timeSpent: number[];
   icon: string;
-  handleEditTask: (task: Task) => void;
-  handleDeleteTask: (taskId: string, projectId: string) => void;
+  handleEditTask?: (task: Task) => void;
+  handleDeleteTask?: (taskId: string, projectId: string) => void;
 }
 
 const statusColors = {
@@ -107,16 +107,22 @@ export const TaskItem: React.FC<TaskProps> = ({
           <DropdownMenuContent>
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleEditTask(task)}>
-              <Pencil className="mr-2" /> Modifier
-            </DropdownMenuItem>
+            {handleEditTask && (
+              <DropdownMenuItem onClick={() => handleEditTask(task)}>
+                <Pencil className="mr-2" /> Modifier
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => handleDeleteTask(task.id ?? "", project.id ?? "")}
-              className="text-red-500"
-            >
-              <Trash2 className="mr-2" /> Supprimer
-            </DropdownMenuItem>
+            {handleDeleteTask && (
+              <DropdownMenuItem
+                onClick={() =>
+                  handleDeleteTask(task.id ?? "", project.id ?? "")
+                }
+                className="text-red-500"
+              >
+                <Trash2 className="mr-2" /> Supprimer
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

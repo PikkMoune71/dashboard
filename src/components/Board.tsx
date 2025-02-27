@@ -9,6 +9,7 @@ import { Card } from "./ui/card";
 import Calendar from "./Calendar";
 import Timer from "./Timer";
 import { PieChartDonut } from "./PieChartDonut";
+import CalendarDownload from "./CalendarDownload";
 
 export const Board = () => {
   const { user } = useUser();
@@ -94,7 +95,10 @@ export const Board = () => {
         <Timer isWidget />
 
         <Card className="col-span-1 sm:col-span-2 lg:col-span-3 row-span-4 p-4">
-          <h2 className="text-2xl font-semibold mb-4">📅 Calendrier</h2>
+          <div className="flex items-center justify-between flex-wrap">
+            <h2 className="text-2xl font-semibold mb-4">📅 Calendrier</h2>
+            <CalendarDownload />
+          </div>
           <Calendar />
         </Card>
       </div>

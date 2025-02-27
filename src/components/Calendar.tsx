@@ -11,7 +11,6 @@ import { Project } from "@/types/Project";
 import { Event } from "@/types/Event";
 import { formatDateToFrench } from "@/composables/useFormatDate";
 import { useIsMobile } from "@/hooks/use-mobile";
-import CalendarDownload from "./CalendarDownload";
 
 const Calendar = () => {
   const calendarRef = useRef<FullCalendar | null>(null);
@@ -52,7 +51,6 @@ const Calendar = () => {
 
   return (
     <div className="calendar-container p-4">
-      <CalendarDownload />
       <FullCalendar
         locale={"fr"}
         key={JSON.stringify(events)}

@@ -58,8 +58,8 @@ export const Board = () => {
           />
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
-        <Card className="col-span-1 lg:col-span-2 row-span-2 bg-white p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+        <Card className="col-span-1 lg:col-span-1 row-span-1 bg-white p-4">
           <h2 className="text-2xl font-semibold mb-2">🚧 Tâches en cours</h2>
           {projects.every((project) =>
             (project.tasks ?? []).every((task) => task.status !== "inProgress")
@@ -91,9 +91,7 @@ export const Board = () => {
           )}
         </Card>
 
-        <div className="col-span-1">
-          <Timer isWidget />
-        </div>
+        <Timer isWidget />
 
         <Card className="col-span-1 sm:col-span-2 lg:col-span-3 row-span-4 p-4">
           <h2 className="text-2xl font-semibold mb-4">📅 Calendrier</h2>

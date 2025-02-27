@@ -5,9 +5,9 @@ import ical from "ical-generator";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
-  const { token } = await params;
+  const token = (await params).token;
 
   const usersQuery = query(
     collection(db, "users"),

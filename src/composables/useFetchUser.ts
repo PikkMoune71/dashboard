@@ -1,11 +1,16 @@
 import { useState, useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/app/firebase/config";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/app/firebase/config";
 import Cookies from "js-cookie";
 import { User } from "@/types/User";
 import { useRouter } from "next/navigation";
+import crypto from "crypto";
+
+const generateToken = (uid: string) => {
+  return crypto.createHash("sha256").update(uid).digest("hex");
+};
 
 export function useUser() {
   const [authUser, loading] = useAuthState(auth);
@@ -27,6 +32,12 @@ export function useUser() {
 
         if (userDocSnap.exists()) {
           const userData = userDocSnap.data();
+          let calendarToken = userData.calendarToken;
+
+          if (!calendarToken) {
+            calendarToken = generateToken(authUser.uid);
+            await setDoc(userDocRef, { calendarToken }, { merge: true });
+          }
           const userLogged = {
             id: authUser.uid,
             firstName: userData.firstName || "Prénom inconnu",
@@ -35,6 +46,7 @@ export function useUser() {
             avatar: userData.avatar || "/default-avatar.png",
             bio: userData.bio,
             phone: userData.phone,
+            calendarToken,
           };
 
           setUser(userLogged);

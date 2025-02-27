@@ -92,7 +92,7 @@ export const AddProject: React.FC<AddProjectProps> = ({ onAddProject }) => {
           </span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>Ajouter un projet</DialogTitle>
           <DialogDescription>

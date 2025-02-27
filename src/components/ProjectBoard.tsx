@@ -21,8 +21,7 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "./ui/dialog";
-import { Badge } from "./ui/badge";
-import { Card } from "./ui/card";
+
 import { Task } from "@/types/Task";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -35,24 +34,11 @@ import { setTasks } from "@/store/slices/taskSlice";
 import { Textarea } from "./ui/textarea";
 import { EditButton } from "./EditButton";
 import { updateProjectAction } from "@/store/actions/projectsAction";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { MoreHorizontal, Pencil, Timer, Trash2 } from "lucide-react";
-import { truncateText } from "@/composables/useTruncatedText";
 import { Label } from "./ui/label";
 import ColorPicker from "./ColorPicker";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import {
-  formatDateToFrench,
-  formatDateToISO,
-  formatTime,
-} from "@/composables/useFormatDate";
+import { formatDateToISO } from "@/composables/useFormatDate";
+import { TaskItem } from "./TaskItem";
 
 const statusColors = {
   todo: "bg-indigo-200 text-indigo-700",
@@ -241,48 +227,6 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
     });
   };
 
-  const formatTaskDates = (
-    startDate: string | undefined,
-    endDate: string | undefined,
-    status: string
-  ) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const start = startDate ? new Date(startDate) : null;
-    const end = endDate ? new Date(endDate) : null;
-
-    const isOverdue = (start && start < today) || (end && end < today);
-    const isUndefined = !startDate && !endDate;
-
-    const isToday =
-      (start && start.toDateString() === today.toDateString()) ||
-      (end && end.toDateString() === today.toDateString());
-    const isDone = status === "done";
-
-    const textClass =
-      (isUndefined || isOverdue) && !isToday && !isDone
-        ? "text-red-500 font-bold"
-        : "text-black";
-
-    if (start && end && start.getTime() === end.getTime()) {
-      return (
-        <span className={textClass}>
-          Le {startDate ? formatDateToFrench(startDate) : "Non défini"}
-        </span>
-      );
-    }
-
-    if (isUndefined) {
-      return <span className={textClass}>Non défini</span>;
-    }
-
-    return (
-      <span className={textClass}>
-        Du {startDate ? formatDateToFrench(startDate) : "Non défini"} au{" "}
-        {endDate ? formatDateToFrench(endDate) : "Non défini"}
-      </span>
-    );
-  };
   return (
     <div>
       <div className="flex justify-between items-center p-4 flex-wrap gap-4">
@@ -487,81 +431,15 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
                         index={index}
                       >
                         {(provided) => (
-                          <Card
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className="bg-white p-2 rounded-xl shadow my-2"
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2">
-                                <Badge
-                                  className={`rounded-full ${
-                                    statusColors[task.status]
-                                  }`}
-                                >
-                                  {icon}
-                                </Badge>
-                                <h3 className="font-bold">
-                                  {truncateText(task.title, 40)}
-                                </h3>
-                              </div>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm">
-                                    <MoreHorizontal />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    onClick={() => handleEditTask(task)}
-                                  >
-                                    <Pencil className="mr-2" /> Modifier
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      handleDeleteTask(
-                                        task.id ?? "",
-                                        project.id ?? ""
-                                      )
-                                    }
-                                    className="text-red-500"
-                                  >
-                                    <Trash2 className="mr-2" /> Supprimer
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-                            <p className="text-sm">{task.description}</p>
-
-                            <div className="flex items-center justify-between mt-2">
-                              <span className="text-xs">
-                                📅{" "}
-                                {formatTaskDates(
-                                  task.startDate,
-                                  task.endDate,
-                                  task.status
-                                )}
-                              </span>
-                              {timeSpent && timeSpent.length > 0 && (
-                                <div className="flex items-center">
-                                  <Timer width={20} />
-                                  <span className="text-xs mt-1">
-                                    {formatTime(
-                                      timeSpent.reduce(
-                                        (total: number, time: number) =>
-                                          total + time,
-                                        0
-                                      )
-                                    )}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </Card>
+                          <TaskItem
+                            task={task}
+                            project={project}
+                            provided={provided}
+                            timeSpent={timeSpent}
+                            icon={icon}
+                            handleEditTask={handleEditTask}
+                            handleDeleteTask={handleDeleteTask}
+                          />
                         )}
                       </Draggable>
                     ))}

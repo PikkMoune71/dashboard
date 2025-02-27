@@ -1,101 +1,215 @@
+"use client";
+import { useState } from "react";
+import { Logo } from "@/components/Logo";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Menu, X } from "lucide-react";
+import { TaskItem } from "@/components/TaskItem";
+import { Task } from "@/types/Task";
+import { Project } from "@/types/Project";
+import { DraggableProvided } from "@hello-pangea/dnd";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const exampleTask: Task = {
+    id: "1",
+    title: "Créer la maquette du site",
+    description:
+      "Préparer la maquette du site avec Figma pour la prochaine réunion",
+    status: "inProgress",
+    projectId: "proj-123",
+    startDate: "2025-02-26",
+    endDate: "2025-03-01",
+    timeSpent: [3600, 7200],
+  };
+
+  const exampleProject: Project = {
+    id: "proj-123",
+    title: "Refonte du site web",
+    slug: "refonte-site-web",
+  };
+
+  const exampleProvided = {
+    draggableProps: {},
+    dragHandleProps: {},
+    innerRef: () => {},
+  } as DraggableProvided;
+
+  const exampleTimeSpent = [3600, 7200];
+
+  return (
+    <div>
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-10 left-10 w-96 h-96 bg-indigo-400 opacity-30 blur-3xl rounded-full"></div>
+        <div className="absolute top-10 left-10 w-full h-full bg-indigo-300 opacity-30 blur-3xl rounded-full"></div>
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-400 opacity-30 blur-3xl rounded-full"></div>
+      </div>
+      <div className="grid grid-rows-[10px_1fr_10px] items-center min-h-screen md:p-10 p-5 pb-20 gap-10 font-[family-name:var(--font-geist-sans)]">
+        <header className="row-start-1 flex justify-between items-center gap-4">
+          <Logo width={150} />
+          <div className="sm:hidden">
+            <button onClick={toggleMenu} className="text-xl">
+              <Menu />
+            </button>
+          </div>
+          <AnimatePresence>
+            {isMenuOpen && (
+              <motion.ul
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="absolute top-0 left-0 w-full bg-white p-10 flex flex-col gap-4 items-center sm:hidden"
+              >
+                <button onClick={toggleMenu} className="absolute top-4 right-4">
+                  <X />
+                </button>
+                <li>
+                  <a href="#">Features</a>
+                </li>
+                <li>
+                  <a href="#">Solutions</a>
+                </li>
+                <li>
+                  <a href="#">Pricing</a>
+                </li>
+                <li className="flex gap-4">
+                  <Button>
+                    <Link href="/login">Connexion</Link>
+                  </Button>
+
+                  <Button variant="outline">
+                    <Link href="/register">Inscription</Link>
+                  </Button>
+                </li>
+              </motion.ul>
+            )}
+          </AnimatePresence>
+          <div className="hidden sm:flex gap-4">
+            <ul className="flex gap-4">
+              <li>
+                <Link href="#">Features</Link>
+              </li>
+              <li>
+                <Link href="#">Solutions</Link>
+              </li>
+              <li>
+                <Link href="#">Pricing</Link>
+              </li>
+            </ul>
+          </div>
+          <div className="hidden sm:flex gap-4">
+            <Button>
+              <Link href="/login">Connexion</Link>
+            </Button>
+            <Button variant="outline">
+              <Link href="/register">Inscription</Link>
+            </Button>
+          </div>
+        </header>
+
+        <main className="flex flex-col gap-8 row-start-2 items-center">
+          <motion.div
+            initial={{ rotate: -180, opacity: 0, y: -300 }}
+            animate={{ rotate: 0, opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Logo isIcon width={150} />
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: -200 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-5xl font-semibold text-center"
+          >
+            Simplifiez la gestion de vos projets,
+            <br />
+            <span className="text-primary">boostez </span>votre productivité
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.5 }}
+            className="text-lg text-center"
+          >
+            Gérez vos tâches, votre planning, atteignez vos objectifs
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, delay: 1 }}
+            className="text-lg text-center"
+          >
+            <Button className="p-6">
+              <Link href="/register" className="text-xl">
+                Commencer
+              </Link>
+            </Button>
+          </motion.div>
+          <motion.div
+            initial={{ rotate: 0, opacity: 0 }}
+            animate={{ rotate: -20, opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.8 }}
+            className="md:absolute md:left-10 md:top-40 z-[-1]"
+          >
+            <TaskItem
+              task={exampleTask}
+              project={exampleProject}
+              provided={exampleProvided}
+              timeSpent={exampleTimeSpent}
+              icon="🚧"
+            />
+          </motion.div>
+          <motion.div
+            initial={{ rotate: 0, opacity: 0 }}
+            animate={{ rotate: 20, opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.8 }}
+            className="md:absolute md:right-10 md:top-40 mt-10 z-[-1]"
           >
             <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+              src="/timer.svg"
+              width={300}
+              height={500}
+              alt="Timer illustration"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </motion.div>
+
+          <motion.div
+            initial={{ rotate: 0, opacity: 0 }}
+            animate={{ rotate: -15, opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.8 }}
+            className="md:absolute md:right-10 md:bottom-20 z-[-1]"
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            <Image
+              src="/done_list.png"
+              width={400}
+              height={400}
+              alt="Timer illustration"
+            />
+          </motion.div>
+          <motion.div
+            initial={{ rotate: 0, opacity: 0 }}
+            animate={{ rotate: 15, opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.8 }}
+            className="md:absolute md:left-10 md:bottom-20 z-[-1]"
+          >
+            <Image
+              src="/todo_list.png"
+              width={400}
+              height={400}
+              alt="Timer illustration"
+            />
+          </motion.div>
+        </main>
+
+        <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center"></footer>
+      </div>
     </div>
   );
 }

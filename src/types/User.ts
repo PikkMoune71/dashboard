@@ -6,4 +6,5 @@ export interface User {
   avatar: string;
   bio?: string;
   phone?: string;
+  calendarToken?: string;
 }

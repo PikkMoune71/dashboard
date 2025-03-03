@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Button } from "./ui/button";
 import {
-  ArrowDownUp,
   MoreHorizontal,
   Pause,
   Play,
@@ -13,15 +12,6 @@ import {
 } from "lucide-react";
 import { Popover, PopoverContent } from "./ui/popover";
 import { PopoverTrigger } from "@radix-ui/react-popover";
-import { Task } from "@/types/Task";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
 import { useDispatch, useSelector } from "react-redux";
 import { formatTime } from "@/composables/useFormatDate";
 import {
@@ -33,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
-import { setSeconds, setStoredTimes } from "@/store/slices/timerSlice";
+import { setSeconds } from "@/store/slices/timerSlice";
 
 import { AppDispatch, RootState } from "@/store/store";
 import useTimer from "@/hooks/use-timer";
@@ -47,8 +37,11 @@ const Timer: React.FC<TimerProps> = ({ isWidget }) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const tasks = useSelector((state: RootState) => state.tasks.tasks);
+  const selectedTaskId = useSelector(
+    (state: RootState) => state.timer.selectedTaskId
+  );
+  const selectedTask = tasks.find((t) => t.id === selectedTaskId);
 
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const {
     isRunning,
     seconds,
@@ -57,40 +50,22 @@ const Timer: React.FC<TimerProps> = ({ isWidget }) => {
     resetTimer,
     saveTimer,
     deleteTimeRecord,
-  } = useTimer(selectedTask);
+  } = useTimer(selectedTaskId);
 
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    const savedTask = localStorage.getItem("selectedTask");
+    const savedTask = localStorage.getItem("selectedTaskId");
     const savedTime = localStorage.getItem("timerTime");
 
     if (savedTask && savedTime) {
-      const task = JSON.parse(savedTask);
-      setSelectedTask(task);
       dispatch(setSeconds(Number(savedTime)));
     }
   }, [dispatch]);
 
-  const handleSelectTask = (taskId: string) => {
-    const task = tasks.find((t) => t.id === taskId) || null;
-    setSelectedTask(task);
-
-    localStorage.setItem("selectedTask", JSON.stringify(task));
-    localStorage.setItem("timerTime", String(0));
-  };
-
-  const changeProject = () => {
-    setSelectedTask(null);
-    dispatch(setStoredTimes([]));
-
-    localStorage.removeItem("selectedTask");
-    localStorage.removeItem("timerTime");
-  };
-
   return (
     <>
-      {selectedTask ? (
+      {selectedTaskId && (
         <>
           <div className="p-2 bg-amber-300 rounded-lg group-data-[collapsible=icon]:hidden">
             <div className="flex items-center justify-between gap-2 mb-2 ">
@@ -131,10 +106,7 @@ const Timer: React.FC<TimerProps> = ({ isWidget }) => {
                     )}{" "}
                   </span>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={changeProject}>
-                    <ArrowDownUp />
-                    Changer de tâche
-                  </DropdownMenuItem>
+
                   <DropdownMenuItem
                     onClick={resetTimer}
                     className="text-red-500"
@@ -142,7 +114,7 @@ const Timer: React.FC<TimerProps> = ({ isWidget }) => {
                     <TimerReset />
                     Réinitialiser
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+
                   <Button onClick={saveTimer} className="w-full mt-2">
                     Enregistrer
                     <Save />
@@ -163,7 +135,7 @@ const Timer: React.FC<TimerProps> = ({ isWidget }) => {
                 </Button>
               </div>
             </div>
-            <span className="text-xs">{selectedTask.title}</span>
+            <span className="text-xs">{selectedTask?.title}</span>
           </div>
           {!isWidget && (
             <div
@@ -197,39 +169,12 @@ const Timer: React.FC<TimerProps> = ({ isWidget }) => {
                       </Button>
                     </div>
                   </div>
-                  <span className="text-xs">{selectedTask.title}</span>
+                  <span className="text-xs">{selectedTask?.title}</span>
                 </PopoverContent>
               </Popover>
             </div>
           )}
         </>
-      ) : (
-        <div className="grid grid-cols-2 p-2 bg-amber-300 rounded-lg group-data-[collapsible=icon]:hidden">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <TimerIcon />
-              <span className="text-sm">Timer</span>
-            </div>
-            <Select onValueChange={handleSelectTask}>
-              <SelectTrigger className="w-[220px] bg-white rounded-lg p-2">
-                <SelectValue placeholder="Choisis une tâche" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {tasks.map((task: Task) => (
-                    <SelectItem
-                      key={task.id}
-                      value={task.id as string}
-                      className="cursor-pointer"
-                    >
-                      {task.title}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
       )}
     </>
   );

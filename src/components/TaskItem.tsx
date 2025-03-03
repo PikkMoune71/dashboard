@@ -13,15 +13,22 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
-import { MoreHorizontal, Pencil, Timer, Trash2 } from "lucide-react";
-import { formatDateToFrench, formatTime } from "@/composables/useFormatDate";
+import { MoreHorizontal, Pencil, Timer, TimerIcon, Trash2 } from "lucide-react";
+import {
+  formatChrono,
+  formatDateToFrench,
+  formatTime,
+} from "@/composables/useFormatDate";
 import { truncateText } from "@/composables/useTruncatedText";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/store/store";
+import { setSelectedTaskId } from "@/store/slices/timerSlice";
 
 interface TaskProps {
   task: Task;
   project: Project;
   provided: DraggableProvided;
-  timeSpent: number[];
+  timeSpent?: number[];
   icon: string;
   handleEditTask?: (task: Task) => void;
   handleDeleteTask?: (taskId: string, projectId: string) => void;
@@ -42,6 +49,24 @@ export const TaskItem: React.FC<TaskProps> = ({
   handleEditTask,
   handleDeleteTask,
 }) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { selectedTaskId } = useSelector((state: RootState) => state.timer);
+  const handleAddTimer = (selectedTaskId: string) => {
+    localStorage.setItem("selectedTaskId", selectedTaskId);
+    const savedTask = localStorage.getItem("selectedTaskId");
+
+    if (savedTask == selectedTaskId) {
+      dispatch(setSelectedTaskId(selectedTaskId));
+    } else {
+      localStorage.removeItem("selectedTaskId");
+      localStorage.removeItem("timerTime");
+    }
+  };
+
+  const totalTime = Array.isArray(task.timeSpent)
+    ? task.timeSpent.reduce((acc, curr) => acc + curr, 0)
+    : 0;
+
   const formatTaskDates = (
     startDate: string | undefined,
     endDate: string | undefined,
@@ -113,6 +138,12 @@ export const TaskItem: React.FC<TaskProps> = ({
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => handleAddTimer(task.id ?? "")}
+              className="bg-amber-300 cursor-pointer"
+            >
+              <TimerIcon className="mr-2" /> Ajouter un timer
+            </DropdownMenuItem>
             {handleDeleteTask && (
               <DropdownMenuItem
                 onClick={() =>
@@ -132,17 +163,20 @@ export const TaskItem: React.FC<TaskProps> = ({
         <span className="text-xs">
           📅 {formatTaskDates(task.startDate, task.endDate, task.status)}
         </span>
-        {timeSpent && timeSpent.length > 0 && (
+
+        {task.id === selectedTaskId ? (
           <div className="flex items-center">
             <Timer width={20} />
-            <span className="text-xs mt-1">
+            <span className="text-xs ml-1">
               {formatTime(
-                timeSpent.reduce(
-                  (total: number, time: number) => total + time,
-                  0
-                )
+                (timeSpent ?? []).reduce((acc, time) => acc + time, 0)
               )}
             </span>
+          </div>
+        ) : (
+          <div className="flex items-center">
+            <Timer width={20} />
+            <span className="text-xs ml-1">{formatChrono(totalTime)}</span>
           </div>
         )}
       </div>

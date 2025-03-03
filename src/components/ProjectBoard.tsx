@@ -55,7 +55,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
   const tasks = useSelector((state: any) =>
     state.tasks.tasks.filter((task: Task) => task.projectId === project.id)
   );
-  const timeSpent = useSelector((state: any) => state.timer.storedTimes);
+  const { storedTimes } = useSelector((state: any) => state.timer);
   const [newTaskTitle, setNewTaskTitle] = useState<string>("");
   const [newTaskDescription, setNewTaskDescription] = useState<string>("");
   const [newTaskStatus, setNewTaskStatus] = useState<Task["status"]>("todo");
@@ -435,7 +435,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project }) => {
                             task={task}
                             project={project}
                             provided={provided}
-                            timeSpent={timeSpent}
+                            timeSpent={storedTimes}
                             icon={icon}
                             handleEditTask={handleEditTask}
                             handleDeleteTask={handleDeleteTask}

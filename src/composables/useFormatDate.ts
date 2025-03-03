@@ -20,3 +20,10 @@ export const formatTime = (seconds: number) => {
     .toString()
     .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 };
+
+export const formatChrono = (time: number | undefined) => {
+  if (!time) return "00:00:00";
+
+  const totalSeconds = time;
+  return formatTime(totalSeconds);
+};
